@@ -115,6 +115,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    if (motor_update_flag) {
+      motor_update_flag = 0U;
+      Motor_Control_Update_2ms();
+    }
   }
   /* USER CODE END 3 */
 }

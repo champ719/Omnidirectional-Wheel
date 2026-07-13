@@ -107,8 +107,6 @@ static void DJI_SendGroup(CAN_HandleTypeDef *hcan,
 
 void Motor_Drv_Send_All(void)
 {
-    Motor_Drv_Init();
-
     /* CAN1 wheel motors 0x201-0x204 → one frame to 0x200 */
     DJI_SendGroup(&hcan1, wheel_motors, 4, 0x201, 0x200);
 

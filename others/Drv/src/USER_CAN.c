@@ -17,14 +17,12 @@ uint8_t  can2_last_lec = 0;
 uint8_t  can1_lec_seen = 0;   /* bitmask: which LEC codes have occurred */
 uint8_t  can2_lec_seen = 0;
 
-static CAN_RxHeaderTypeDef rx_header;
-static uint8_t rx_data[8];
 
 extern Wheel_Motor_t wheel_motors[4];
 extern Wheel_Motor_t friction_wheels[2];
 extern Wheel_Motor_t gimbal_motors[2];
 
-static void CAN_RouteMessage(CAN_HandleTypeDef *hcan, uint32_t stdId)
+static void CAN_RouteMessage(CAN_HandleTypeDef *hcan, uint32_t stdId, uint8_t *rx_data)
 {
     if (hcan == &hcan1) {
         switch (stdId) {
@@ -112,6 +110,9 @@ void CAN_Init(void)
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
+    CAN_RxHeaderTypeDef rx_header;
+    uint8_t rx_data[8];
+
     if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header, rx_data) == HAL_OK) {
         if (hcan == &hcan1) {
             can1_rx_count++;
@@ -119,7 +120,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
             can2_rx_count++;
         }
         if ((rx_header.IDE == CAN_ID_STD) && (rx_header.RTR == CAN_RTR_DATA)) {
-            CAN_RouteMessage(hcan, rx_header.StdId);
+            CAN_RouteMessage(hcan, rx_header.StdId, rx_data);
         }
     } else {
         can_receive_error++;
@@ -131,7 +132,7 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
     can_receive_error++;
 }
 
-void CAN_Send_DM_Motor_Data(CAN_HandleTypeDef *hcan, int16_t StdId, uint8_t *Data)
+void CAN_Send_DM_Motor_Data(CAN_HandleTypeDef *hcan, uint16_t StdId, uint8_t *Data)
 {
     CAN_TxHeaderTypeDef tx_header;
     uint32_t tx_mailbox = 0;
