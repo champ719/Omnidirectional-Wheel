@@ -4,6 +4,7 @@
 "omnidirectional wheel\gpio.o"
 "omnidirectional wheel\can.o"
 "omnidirectional wheel\dma.o"
+"omnidirectional wheel\tim.o"
 "omnidirectional wheel\usart.o"
 "omnidirectional wheel\stm32f4xx_it.o"
 "omnidirectional wheel\stm32f4xx_hal_msp.o"
@@ -21,11 +22,15 @@
 "omnidirectional wheel\stm32f4xx_hal_cortex.o"
 "omnidirectional wheel\stm32f4xx_hal.o"
 "omnidirectional wheel\stm32f4xx_hal_exti.o"
+"omnidirectional wheel\stm32f4xx_hal_tim.o"
+"omnidirectional wheel\stm32f4xx_hal_tim_ex.o"
 "omnidirectional wheel\stm32f4xx_hal_uart.o"
 "omnidirectional wheel\system_stm32f4xx.o"
 "omnidirectional wheel\motor_drv.o"
 "omnidirectional wheel\user_can.o"
 "omnidirectional wheel\remote.o"
+"omnidirectional wheel\motor.o"
+"omnidirectional wheel\user_pid.o"
 --strict --scatter "Omnidirectional Wheel\Omnidirectional Wheel.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

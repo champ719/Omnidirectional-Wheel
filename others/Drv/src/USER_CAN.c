@@ -162,7 +162,3 @@ void CAN_Send_DM_Motor_Data(CAN_HandleTypeDef *hcan, int16_t StdId, uint8_t *Dat
     }
 }
 
-void CAN_Transmit(void)
-{
-    Motor_Drv_Send_All();
-}

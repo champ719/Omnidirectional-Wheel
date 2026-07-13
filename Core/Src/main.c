@@ -20,15 +20,16 @@
 #include "main.h"
 #include "can.h"
 #include "dma.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
-#include "USER_CAN.h"
-#include "Motor_Drv.h"
-#include "Remote.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "USER_CAN.h"
+#include "Motor_Drv.h"
+#include "Remote.h"
+#include "motor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -53,9 +54,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-void CAN_Transmit(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -96,11 +95,17 @@ int main(void)
   MX_CAN1_Init();
   MX_CAN2_Init();
   MX_USART3_UART_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
   CAN_Init();
   Motor_Drv_Init();
   Remote_Init();
+  Motor_Control_Init();
   HAL_Delay(10);
+  if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -110,8 +115,6 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    CAN_Transmit();
-    HAL_Delay(1);
   }
   /* USER CODE END 3 */
 }
@@ -140,7 +143,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = 6;
   RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 7;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
