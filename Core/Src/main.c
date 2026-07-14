@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body
+  * @brief          : Main program body (RTOS version)
   ******************************************************************************
   * @attention
   *
@@ -20,6 +20,7 @@
 #include "main.h"
 #include "can.h"
 #include "dma.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -30,6 +31,7 @@
 #include "Motor_Drv.h"
 #include "Remote.h"
 #include "motor.h"
+#include "app_tasks.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -59,7 +61,8 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+#include "struct_typedef.h"
+fp32 gyro[3], accel[3], temp;
 /* USER CODE END 0 */
 
 /**
@@ -96,29 +99,32 @@ int main(void)
   MX_CAN2_Init();
   MX_USART3_UART_Init();
   MX_TIM6_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   CAN_Init();
   Motor_Drv_Init();
   Remote_Init();
   Motor_Control_Init();
-  HAL_Delay(10);
-  if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
-  {
-    Error_Handler();
-  }
+
+  /* Create RTOS tasks (motor control, communication) */
+  AppTasks_Init();
+
+  /* Start the RTOS kernel scheduler (never returns) */
+  osKernelStart();
+
+  /* If we ever get here, something is fatally wrong */
+  Error_Handler();
+  /* The error handler above traps; code below is unreachable */
   /* USER CODE END 2 */
 
-  /* Infinite loop */
+  /* Infinite loop - should never reach here */
+  /* (osKernelStart() does not return) */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    if (motor_update_flag) {
-      motor_update_flag = 0U;
-      Motor_Control_Update_2ms();
-    }
   }
   /* USER CODE END 3 */
 }

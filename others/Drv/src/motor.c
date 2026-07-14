@@ -18,9 +18,9 @@ volatile Motor_PID_Parameters_t motor_speed_pid_parameters =
 /* Yaw angle PID: output 5.0 corresponds to CAN current command about 500. */
 volatile Motor_PID_Parameters_t motor_yaw_pid_parameters =
 {
-    500.0f,  /* kp */
+    100.0f,  /* kp */
     0.0f,  /* ki */
-    50.0f,  /* kd */
+    8.0f,  /* kd */
     1000000.00f,  /* output_max */
     500.0f  /* integral_max */
 };
@@ -307,9 +307,13 @@ void Motor_Control_Update_2ms(void)
     Motor_Drv_Send_All();
 }
 
+/* RTOS mode: timing is handled by vTaskDelayUntil in MotorCtrlTask. */
+/* Bare-metal mode: uncomment HAL_TIM_PeriodElapsedCallback below. */
+/*
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM6) {
         motor_update_flag = 1U;
     }
 }
+*/

@@ -21,10 +21,27 @@ omnidirectional\ wheel/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_flash_ramfunc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_pwr_ex.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_spi.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\Core\Inc\can.h ..\Core\Inc\dma.h ..\Core\Inc\tim.h \
-  ..\Core\Inc\usart.h ..\Core\Inc\gpio.h ..\others\Drv\inc\USER_CAN.h \
-  ..\others\Drv\inc\Motor_Drv.h ..\others\Drv\inc\Remote.h \
-  ..\others\Drv\inc\motor.h ..\others\Drv\inc\USER_PID.h
+  ..\Core\Inc\can.h ..\Core\Inc\dma.h ..\Core\Inc\spi.h \
+  ..\Core\Inc\tim.h ..\Core\Inc\usart.h ..\Core\Inc\gpio.h \
+  ..\others\Drv\inc\USER_CAN.h ..\others\Drv\inc\Motor_Drv.h \
+  ..\others\Drv\inc\Remote.h ..\others\Drv\inc\motor.h \
+  ..\others\Drv\inc\USER_PID.h ..\Core\Inc\app_tasks.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\cmsis_os.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\FreeRTOS.h \
+  ..\Core\Inc\FreeRTOSConfig.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\projdefs.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\portable.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\deprecated_definitions.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\portmacro.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\mpu_wrappers.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\task.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\list.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\timers.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\queue.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\semphr.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\inc\event_groups.h \
+  ..\Core\Inc\struct_typedef.h

@@ -57,6 +57,8 @@
 /* External variables --------------------------------------------------------*/
 extern CAN_HandleTypeDef hcan1;
 extern CAN_HandleTypeDef hcan2;
+extern DMA_HandleTypeDef hdma_spi1_rx;
+extern DMA_HandleTypeDef hdma_spi1_tx;
 extern TIM_HandleTypeDef htim6;
 extern DMA_HandleTypeDef hdma_usart3_rx;
 extern UART_HandleTypeDef huart3;
@@ -145,15 +147,18 @@ void UsageFault_Handler(void)
 /**
   * @brief This function handles System service call via SWI instruction.
   */
+/* SVC_Handler is now managed by FreeRTOS (vPortSVCHandler in port.c) */
+/*
 void SVC_Handler(void)
 {
-  /* USER CODE BEGIN SVCall_IRQn 0 */
+  // USER CODE BEGIN SVCall_IRQn 0
 
-  /* USER CODE END SVCall_IRQn 0 */
-  /* USER CODE BEGIN SVCall_IRQn 1 */
+  // USER CODE END SVCall_IRQn 0
+  // USER CODE BEGIN SVCall_IRQn 1
 
-  /* USER CODE END SVCall_IRQn 1 */
+  // USER CODE END SVCall_IRQn 1
 }
+*/
 
 /**
   * @brief This function handles Debug monitor.
@@ -171,29 +176,35 @@ void DebugMon_Handler(void)
 /**
   * @brief This function handles Pendable request for system service.
   */
+/* PendSV_Handler is now managed by FreeRTOS (xPortPendSVHandler in port.c) */
+/*
 void PendSV_Handler(void)
 {
-  /* USER CODE BEGIN PendSV_IRQn 0 */
+  // USER CODE BEGIN PendSV_IRQn 0
 
-  /* USER CODE END PendSV_IRQn 0 */
-  /* USER CODE BEGIN PendSV_IRQn 1 */
+  // USER CODE END PendSV_IRQn 0
+  // USER CODE BEGIN PendSV_IRQn 1
 
-  /* USER CODE END PendSV_IRQn 1 */
+  // USER CODE END PendSV_IRQn 1
 }
+*/
 
 /**
   * @brief This function handles System tick timer.
   */
+/* SysTick_Handler is now managed by FreeRTOS (xPortSysTickHandler in port.c) */
+/*
 void SysTick_Handler(void)
 {
-  /* USER CODE BEGIN SysTick_IRQn 0 */
+  // USER CODE BEGIN SysTick_IRQn 0
 
-  /* USER CODE END SysTick_IRQn 0 */
+  // USER CODE END SysTick_IRQn 0
   HAL_IncTick();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
+  // USER CODE BEGIN SysTick_IRQn 1
 
-  /* USER CODE END SysTick_IRQn 1 */
+  // USER CODE END SysTick_IRQn 1
 }
+*/
 
 /******************************************************************************/
 /* STM32F4xx Peripheral Interrupt Handlers                                    */
@@ -256,6 +267,34 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA2 stream0 global interrupt.
+  */
+void DMA2_Stream0_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 0 */
+
+  /* USER CODE END DMA2_Stream0_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_spi1_rx);
+  /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream0_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA2 stream3 global interrupt.
+  */
+void DMA2_Stream3_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA2_Stream3_IRQn 0 */
+
+  /* USER CODE END DMA2_Stream3_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_spi1_tx);
+  /* USER CODE BEGIN DMA2_Stream3_IRQn 1 */
+
+  /* USER CODE END DMA2_Stream3_IRQn 1 */
 }
 
 /**
