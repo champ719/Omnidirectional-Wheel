@@ -44,4 +44,4 @@ omnidirectional\ wheel/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\inc\queue.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\inc\semphr.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\inc\event_groups.h \
-  ..\Core\Inc\struct_typedef.h
+  ..\others\Drv\inc\Buzzer.h ..\Core\Inc\struct_typedef.h

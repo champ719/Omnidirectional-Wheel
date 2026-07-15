@@ -32,6 +32,7 @@
 #include "Remote.h"
 #include "motor.h"
 #include "app_tasks.h"
+#include "Buzzer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,6 +99,7 @@ int main(void)
   MX_CAN1_Init();
   MX_CAN2_Init();
   MX_USART3_UART_Init();
+  MX_TIM4_Init();
   MX_TIM6_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
@@ -105,6 +107,7 @@ int main(void)
   Motor_Drv_Init();
   Remote_Init();
   Motor_Control_Init();
+  Buzzer_Init();
 
   /* Create RTOS tasks (motor control, communication) */
   AppTasks_Init();

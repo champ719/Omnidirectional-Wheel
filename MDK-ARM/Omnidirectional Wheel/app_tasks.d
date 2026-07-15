@@ -42,4 +42,5 @@ omnidirectional\ wheel/app_tasks.o: ..\Core\Src\app_tasks.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
   ..\Core\Inc\tim.h ..\others\Drv\inc\motor.h \
   ..\others\Drv\inc\USER_PID.h ..\Core\Inc\BMI088driver.h \
-  ..\Core\Inc\struct_typedef.h ..\others\Drv\inc\Remote.h
+  ..\Core\Inc\struct_typedef.h ..\Core\Inc\imu_attitude.h \
+  ..\others\Drv\inc\Remote.h ..\others\Drv\inc\Buzzer.h

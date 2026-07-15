@@ -558,6 +558,11 @@
               <FilePath>..\Core\Src\BMI088driver.c</FilePath>
             </File>
             <File>
+              <FileName>imu_attitude.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Core\Src\imu_attitude.c</FilePath>
+            </File>
+            <File>
               <FileName>BMI088Middleware.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Core\Src\BMI088Middleware.c</FilePath>
@@ -844,6 +849,11 @@
               <FileName>motor.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\others\Drv\src\motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>Buzzer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\others\Drv\src\Buzzer.c</FilePath>
             </File>
             <File>
               <FileName>USER_PID.c</FileName>

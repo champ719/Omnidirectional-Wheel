@@ -3,7 +3,9 @@
 #include "tim.h"
 #include "motor.h"
 #include "BMI088driver.h"
+#include "imu_attitude.h"
 #include "Remote.h"
+#include "Buzzer.h"
 
 /* Task handles */
 osThreadId MotorCtrlTaskHandle;
@@ -37,10 +39,13 @@ void MotorCtrlTask(void const *argument)
 {
     TickType_t xLastWakeTime;
 
+    (void)argument;
+
     /* Initialize sensor - retry until success */
     while (BMI088_init()) {
         osDelay(10);
     }
+    IMU_Attitude_Init();
 
     /* Initialize the wake time */
     xLastWakeTime = xTaskGetTickCount();
@@ -48,9 +53,11 @@ void MotorCtrlTask(void const *argument)
     for (;;) {
         /* Read BMI088 gyro + accel + temperature */
         BMI088_read(gyro, accel, &temp);
+        IMU_Attitude_Update(gyro, accel, MOTOR_CONTROL_PERIOD_S);
 
         /* Run motor control update (2ms cycle) */
         Motor_Control_Update_2ms();
+        Buzzer_Update_2ms();
 
         /* Precise 2ms period - compensates for execution time */
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(2));
@@ -63,6 +70,8 @@ void MotorCtrlTask(void const *argument)
  */
 void CommTask(void const *argument)
 {
+    (void)argument;
+
     for (;;) {
         osDelay(100);  /* 100ms debug/supervision period */
 
