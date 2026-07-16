@@ -1,0 +1,66 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "STM32: Configure",
+            "type": "process",
+            "command": "C:\\Program Files\\JetBrains\\CLion 2025.3\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+            "args": [
+                "-S",
+                "${workspaceFolder}",
+                "-B",
+                "${workspaceFolder}\\build",
+                "-G",
+                "Ninja",
+                "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2025.3/bin/ninja/win/x64/ninja.exe",
+                "-DCMAKE_TOOLCHAIN_FILE=${workspaceFolder}/cmake/arm-none-eabi-gcc.cmake",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+            ],
+            "options": {
+                "env": {
+                    "PATH": "C:\\Program Files\\JetBrains\\CLion 2025.3\\bin\\ninja\\win\\x64;C:\\clion-toolchain\\arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi\\bin;${env:PATH}"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "STM32: Build",
+            "type": "process",
+            "command": "C:\\Program Files\\JetBrains\\CLion 2025.3\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+            "args": [
+                "--build",
+                "${workspaceFolder}\\build"
+            ],
+            "options": {
+                "env": {
+                    "PATH": "C:\\Program Files\\JetBrains\\CLion 2025.3\\bin\\ninja\\win\\x64;C:\\clion-toolchain\\arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi\\bin;${env:PATH}"
+                }
+            },
+            "dependsOn": "STM32: Configure",
+            "dependsOrder": "sequence",
+            "problemMatcher": "$gcc",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "STM32: Clean",
+            "type": "process",
+            "command": "C:\\Program Files\\JetBrains\\CLion 2025.3\\bin\\cmake\\win\\x64\\bin\\cmake.exe",
+            "args": [
+                "--build",
+                "${workspaceFolder}\\build",
+                "--target",
+                "clean"
+            ],
+            "options": {
+                "env": {
+                    "PATH": "C:\\Program Files\\JetBrains\\CLion 2025.3\\bin\\ninja\\win\\x64;C:\\clion-toolchain\\arm-gnu-toolchain-13.3.rel1-mingw-w64-i686-arm-none-eabi\\bin;${env:PATH}"
+                }
+            },
+            "problemMatcher": []
+        }
+    ]
+}
