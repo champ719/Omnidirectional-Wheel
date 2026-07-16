@@ -1,4 +1,7 @@
 #include "imu_attitude.h"
+#include "BMI088driver.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include <math.h>
 #include <string.h>
 
@@ -6,6 +9,7 @@
 #define IMU_TWO_PI  6.28318530717958647692f
 
 IMU_Attitude_t imu_attitude;
+IMU_RawData_t imu_raw_data;
 
 static float IMU_Attitude_Limit(float value, float limit)
 {
@@ -280,4 +284,34 @@ void IMU_Attitude_Update(const fp32 gyro_sensor[3],
     imu_attitude.quaternion[2] = q2 * reciprocal_norm;
     imu_attitude.quaternion[3] = q3 * reciprocal_norm;
     IMU_Attitude_UpdateEuler(0U);
+}
+
+void OS_IMUCallback(void const *argument)
+{
+    TickType_t last_wake;
+    uint8_t init_status;
+
+    (void)argument;
+    IMU_Attitude_Init();
+
+    do
+    {
+        init_status = BMI088_init();
+        if (init_status != BMI088_NO_ERROR)
+        {
+            vTaskDelay(pdMS_TO_TICKS(100U));
+        }
+    } while (init_status != BMI088_NO_ERROR);
+
+    last_wake = xTaskGetTickCount();
+    for (;;)
+    {
+        BMI088_read(imu_raw_data.gyro,
+                    imu_raw_data.accel,
+                    &imu_raw_data.temperature);
+        IMU_Attitude_Update(imu_raw_data.gyro,
+                            imu_raw_data.accel,
+                            0.002f);
+        vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(2U));
+    }
 }

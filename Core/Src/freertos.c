@@ -27,7 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "BMI088driver.h"
 #include "imu_attitude.h"
-#include "motor.h"
+#include "Motor_Task.h"
 #include "Buzzer.h"
 /* USER CODE END Includes */
 
@@ -48,71 +48,28 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-extern fp32 gyro[3];
-extern fp32 accel[3];
-extern fp32 temp;
-
-/* Minimum unused stack observed since each task started, in 32-bit words. */
-volatile UBaseType_t motor_stack_free = 0;
-volatile UBaseType_t comm_stack_free = 0;
-
-/* Same values converted to bytes for convenient inspection in Keil Watch. */
-volatile uint32_t motor_stack_free_bytes = 0;
-volatile uint32_t comm_stack_free_bytes = 0;
 /* USER CODE END Variables */
-osThreadId MotorCtrlTaskHandle;
-osThreadId CommTaskHandle;
+osThreadId defaultTaskHandle;
+osThreadId IMUTaskHandle;
+osThreadId BeepTaskHandle;
+osThreadId MotorTaskHandle;
+osThreadId ErrorTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* USER CODE END FunctionPrototypes */
 
-void MotorCtrl(void const * argument);
-void Common(void const * argument);
+void StartDefaultTask(void const * argument);
+void OS_IMUCallback(void const * argument);
+void OS_BeepCallback(void const * argument);
+void OS_MotorCallback(void const * argument);
+void OS_ErrorCallback(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
-
-/* Hook prototypes */
-void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
-void vApplicationMallocFailedHook(void);
-
-/* USER CODE BEGIN 4 */
-__weak void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
-{
-   /* Run time stack overflow checking is performed if
-   configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
-   called if a stack overflow is detected. */
-  (void)xTask;
-  (void)pcTaskName;
-
-  taskDISABLE_INTERRUPTS();
-  for (;;) {
-  }
-}
-/* USER CODE END 4 */
-
-/* USER CODE BEGIN 5 */
-__weak void vApplicationMallocFailedHook(void)
-{
-   /* vApplicationMallocFailedHook() will only be called if
-   configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h. It is a hook
-   function that will get called if a call to pvPortMalloc() fails.
-   pvPortMalloc() is called internally by the kernel whenever a task, queue,
-   timer or semaphore is created. It is also called by various parts of the
-   demo application. If heap_1.c or heap_2.c are used, then the size of the
-   heap available to pvPortMalloc() is defined by configTOTAL_HEAP_SIZE in
-   FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
-   to query the size of free heap space that remains (although it does not
-   provide information on how the remaining heap might be fragmented). */
-  taskDISABLE_INTERRUPTS();
-  for (;;) {
-  }
-}
-/* USER CODE END 5 */
 
 /* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
 static StaticTask_t xIdleTaskTCBBuffer;
@@ -154,13 +111,25 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of MotorCtrlTask */
-  osThreadDef(MotorCtrlTask, MotorCtrl, osPriorityHigh, 0, 256);
-  MotorCtrlTaskHandle = osThreadCreate(osThread(MotorCtrlTask), NULL);
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityLow, 0, 512);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
-  /* definition and creation of CommTask */
-  osThreadDef(CommTask, Common, osPriorityNormal, 0, 256);
-  CommTaskHandle = osThreadCreate(osThread(CommTask), NULL);
+  /* definition and creation of IMUTask */
+  osThreadDef(IMUTask, OS_IMUCallback, osPriorityHigh, 0, 1024);
+  IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
+
+  /* definition and creation of BeepTask */
+  osThreadDef(BeepTask, OS_BeepCallback, osPriorityBelowNormal, 0, 128);
+  BeepTaskHandle = osThreadCreate(osThread(BeepTask), NULL);
+
+  /* definition and creation of MotorTask */
+  osThreadDef(MotorTask, OS_MotorCallback, osPriorityAboveNormal, 0, 512);
+  MotorTaskHandle = osThreadCreate(osThread(MotorTask), NULL);
+
+  /* definition and creation of ErrorTask */
+  osThreadDef(ErrorTask, OS_ErrorCallback, osPriorityRealtime, 0, 256);
+  ErrorTaskHandle = osThreadCreate(osThread(ErrorTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -168,66 +137,109 @@ void MX_FREERTOS_Init(void) {
 
 }
 
-/* USER CODE BEGIN Header_MotorCtrl */
+/* USER CODE BEGIN Header_StartDefaultTask */
 /**
-  * @brief  Function implementing the MotorCtrlTask thread.
+  * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_MotorCtrl */
-__weak void MotorCtrl(void const * argument)
+/* USER CODE END Header_StartDefaultTask */
+void StartDefaultTask(void const * argument)
 {
-  /* USER CODE BEGIN MotorCtrl */
-  TickType_t xLastWakeTime;
-
-  (void)argument;
-
-  /* BMI088 may not be ready immediately after power-up. */
-  while (BMI088_init()) {
-    osDelay(10);
+  /* USER CODE BEGIN StartDefaultTask */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
   }
-
-  IMU_Attitude_Init();
-  xLastWakeTime = xTaskGetTickCount();
-
-  for (;;) {
-    BMI088_read(gyro, accel, &temp);
-    IMU_Attitude_Update(gyro, accel, MOTOR_CONTROL_PERIOD_S);
-
-    Motor_Control_Update_2ms();
-    Buzzer_Update_2ms();
-
-    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(2));
-  }
-  /* USER CODE END MotorCtrl */
+  /* USER CODE END StartDefaultTask */
 }
 
-/* USER CODE BEGIN Header_Common */
+/* USER CODE BEGIN Header_OS_IMUCallback */
 /**
-* @brief Function implementing the CommTask thread.
+* @brief Function implementing the IMUTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_Common */
-__weak void Common(void const * argument)
+/* USER CODE END Header_OS_IMUCallback */
+__weak void OS_IMUCallback(void const * argument)
 {
-  /* USER CODE BEGIN Common */
-  (void)argument;
-
-  for (;;) {
-    motor_stack_free = uxTaskGetStackHighWaterMark(MotorCtrlTaskHandle);
-    comm_stack_free = uxTaskGetStackHighWaterMark(CommTaskHandle);
-
-    motor_stack_free_bytes = (uint32_t)motor_stack_free * sizeof(StackType_t);
-    comm_stack_free_bytes = (uint32_t)comm_stack_free * sizeof(StackType_t);
-
-    /* Reserved for telemetry and CAN/remote/motor supervision. */
-    osDelay(1000);
+  /* USER CODE BEGIN OS_IMUCallback */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
   }
-  /* USER CODE END Common */
+  /* USER CODE END OS_IMUCallback */
+}
+
+/* USER CODE BEGIN Header_OS_BeepCallback */
+/**
+* @brief Function implementing the BeepTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_OS_BeepCallback */
+__weak void OS_BeepCallback(void const * argument)
+{
+  /* USER CODE BEGIN OS_BeepCallback */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END OS_BeepCallback */
+}
+
+/* USER CODE BEGIN Header_OS_MotorCallback */
+/**
+* @brief Function implementing the MotorTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_OS_MotorCallback */
+__weak void OS_MotorCallback(void const * argument)
+{
+  /* USER CODE BEGIN OS_MotorCallback */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END OS_MotorCallback */
+}
+
+/* USER CODE BEGIN Header_OS_ErrorCallback */
+/**
+* @brief Function implementing the ErrorTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_OS_ErrorCallback */
+__weak void OS_ErrorCallback(void const * argument)
+{
+  /* USER CODE BEGIN OS_ErrorCallback */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END OS_ErrorCallback */
 }
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+
+void vApplicationStackOverflowHook(TaskHandle_t task,
+                                   char *task_name)
+{
+  (void)task;
+  (void)task_name;
+
+  taskDISABLE_INTERRUPTS();
+  for (;;)
+  {
+  }
+}
 
 /* USER CODE END Application */

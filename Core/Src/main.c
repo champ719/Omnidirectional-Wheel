@@ -28,11 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "USER_CAN.h"
-#include "Motor_Drv.h"
-#include "Remote.h"
-#include "motor.h"
-#include "Buzzer.h"
+#include "Motor_Task.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,8 +59,6 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#include "struct_typedef.h"
-fp32 gyro[3], accel[3], temp;
 /* USER CODE END 0 */
 
 /**
@@ -104,11 +98,7 @@ int main(void)
   MX_TIM6_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  CAN_Init();
-  Motor_Drv_Init();
-  Remote_Init();
-  Motor_Control_Init();
-  Buzzer_Init();
+  Motor_Task_Init();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */

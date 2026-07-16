@@ -1,5 +1,5 @@
-omnidirectional\ wheel/motor_drv.o: ..\others\Drv\src\Motor_Drv.c \
-  ..\others\Drv\inc\Motor_Drv.h ..\Core\Inc\main.h \
+omnidirectional\ wheel/motor_drv.o: ..\Device\src\Motor_Drv.c \
+  ..\Device\inc\Motor_Drv.h ..\Core\Inc\main.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
@@ -26,4 +26,4 @@ omnidirectional\ wheel/motor_drv.o: ..\others\Drv\src\Motor_Drv.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\Core\Inc\can.h ..\others\Drv\inc\USER_CAN.h
+  ..\Core\Inc\can.h ..\BSP\inc\USER_CAN.h

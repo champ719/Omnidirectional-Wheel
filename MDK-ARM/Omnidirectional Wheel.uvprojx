@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../others/Drv/inc;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc;../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F4xx/Include;../Drivers/CMSIS/Include;../BSP/inc;../Device/inc;../Algorithm/inc;../Application/inc;../IMU/inc;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS;../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -395,21 +395,6 @@
         <Group>
           <GroupName>Application/User/Core</GroupName>
           <Files>
-            <File>
-              <FileName>BMI088driver.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\BMI088driver.c</FilePath>
-            </File>
-            <File>
-              <FileName>imu_attitude.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\imu_attitude.c</FilePath>
-            </File>
-            <File>
-              <FileName>BMI088Middleware.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Core\Src\BMI088Middleware.c</FilePath>
-            </File>
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
@@ -930,37 +915,97 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>others</GroupName>
+          <GroupName>BSP</GroupName>
           <Files>
-            <File>
-              <FileName>Motor_Drv.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\others\Drv\src\Motor_Drv.c</FilePath>
-            </File>
             <File>
               <FileName>USER_CAN.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\others\Drv\src\USER_CAN.c</FilePath>
+              <FilePath>..\BSP\src\USER_CAN.c</FilePath>
             </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Device</GroupName>
+          <Files>
             <File>
               <FileName>Remote.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\others\Drv\src\Remote.c</FilePath>
-            </File>
-            <File>
-              <FileName>motor.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\others\Drv\src\motor.c</FilePath>
+              <FilePath>..\Device\src\Remote.c</FilePath>
             </File>
             <File>
               <FileName>Buzzer.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\others\Drv\src\Buzzer.c</FilePath>
+              <FilePath>..\Device\src\Buzzer.c</FilePath>
             </File>
+            <File>
+              <FileName>Motor_Drv.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Device\src\Motor_Drv.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Algorithm</GroupName>
+          <Files>
             <File>
               <FileName>USER_PID.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\others\Drv\src\USER_PID.c</FilePath>
+              <FilePath>..\Algorithm\src\USER_PID.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application</GroupName>
+          <Files>
+            <File>
+              <FileName>Error.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\src\Error.c</FilePath>
+            </File>
+            <File>
+              <FileName>Rotate.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\src\Rotate.c</FilePath>
+            </File>
+            <File>
+              <FileName>Motor_Task.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\src\Motor_Task.c</FilePath>
+            </File>
+            <File>
+              <FileName>Gimbal.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\src\Gimbal.c</FilePath>
+            </File>
+            <File>
+              <FileName>Chassis.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\src\Chassis.c</FilePath>
+            </File>
+            <File>
+              <FileName>Robot_Control.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\src\Robot_Control.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>IMU</GroupName>
+          <Files>
+            <File>
+              <FileName>BMI088driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\IMU\src\BMI088driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>BMI088Middleware.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\IMU\src\BMI088Middleware.c</FilePath>
+            </File>
+            <File>
+              <FileName>imu_attitude.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\IMU\src\imu_attitude.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -12,6 +12,15 @@ endif()
 
 set(LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/STM32F407IGHx_FLASH.ld")
 
+# Collect user modules using the same top-level layering as the sentry project.
+file(GLOB_RECURSE USER_SOURCES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/BSP/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Device/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Application/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/IMU/*.c"
+)
+
 set(PROJECT_SOURCES
     Core/Src/main.c
     Core/Src/gpio.c
@@ -25,9 +34,8 @@ set(PROJECT_SOURCES
     Core/Src/stm32f4xx_hal_timebase_tim.c
     Core/Src/system_stm32f4xx.c
     Core/Src/freertos.c
-    Core/Src/BMI088driver.c
-    Core/Src/BMI088Middleware.c
-    Core/Src/imu_attitude.c
+
+    ${USER_SOURCES}
 
     Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
     Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c
@@ -59,13 +67,6 @@ set(PROJECT_SOURCES
     Middlewares/Third_Party/FreeRTOS/Source/tasks.c
     Middlewares/Third_Party/FreeRTOS/Source/timers.c
 
-    others/Drv/src/Motor_Drv.c
-    others/Drv/src/USER_CAN.c
-    others/Drv/src/Remote.c
-    others/Drv/src/motor.c
-    others/Drv/src/Buzzer.c
-    others/Drv/src/USER_PID.c
-
     Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/gcc/startup_stm32f407xx.s
 )
 
@@ -80,7 +81,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     Middlewares/Third_Party/FreeRTOS/Source/include
     Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
     Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
-    others/Drv/inc
+    BSP/inc
+    Device/inc
+    Algorithm/inc
+    Application/inc
+    IMU/inc
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

@@ -1,4 +1,6 @@
 #include "Buzzer.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include "tim.h"
 
 #define BUZZER_FIRST_BEEP_TICKS   50U
@@ -13,8 +15,8 @@ typedef enum
     BUZZER_STATE_SECOND_BEEP
 } Buzzer_State_t;
 
-static Buzzer_State_t buzzer_state = BUZZER_STATE_IDLE;
-static uint16_t buzzer_ticks_remaining = 0U;
+static volatile Buzzer_State_t buzzer_state = BUZZER_STATE_IDLE;
+static volatile uint16_t buzzer_ticks_remaining = 0U;
 
 static void Buzzer_SetEnabled(uint8_t enabled)
 {
@@ -73,5 +75,19 @@ void Buzzer_Update_2ms(void)
         buzzer_ticks_remaining = 0U;
         Buzzer_SetEnabled(0U);
         break;
+    }
+}
+
+void OS_BeepCallback(void const *argument)
+{
+    TickType_t last_wake;
+
+    (void)argument;
+    last_wake = xTaskGetTickCount();
+
+    for (;;)
+    {
+        Buzzer_Update_2ms();
+        vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(2U));
     }
 }

@@ -1,5 +1,5 @@
-omnidirectional\ wheel/remote.o: ..\others\Drv\src\Remote.c \
-  ..\others\Drv\inc\Remote.h ..\Core\Inc\main.h \
+omnidirectional\ wheel/remote.o: ..\Device\src\Remote.c \
+  ..\Device\inc\Remote.h ..\Core\Inc\main.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \

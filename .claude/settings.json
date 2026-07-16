@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"C:/Users/Administrator/Desktop/TARS_Go/Infantry_Sentry_H7_Upper_CMake-main\")",
+      "Read(//c/Users/Administrator/Desktop/TARS_Go/**)",
+      "Bash(find \"C:/Users/Administrator/Desktop/Omnidirectional Wheel\" -maxdepth 4 -type f | sort 2>/dev/null | head -200)",
+      "Read(//c/Users/Administrator/Desktop/**)",
+      "Bash(find \"C:/Users/Administrator/Desktop/Omnidirectional Wheel\" -maxdepth 4 -type d | sort 2>/dev/null)",
+      "Bash(ls \"C:/Users/CHAMP/Desktop/TARS_Go/\" 2>/dev/null || ls \"C:/Users/Administrator/Desktop/\" 2>/dev/null || echo \"Neither path found\")",
+      "Read(//c/Users/Administrator/**)",
+      "Bash(find /c/Users -maxdepth 4 -type d -name \"Infantry_Sentry_H7_Upper_CMake-main\" 2>/dev/null)",
+      "Read(//c/Users/**)",
+      "Bash(find \"/c/Users/CHAMP/Desktop/TARS_Go/Infantry_Sentry_H7_Upper_CMake-main\" -maxdepth 4 -not -path \"*/\\\\.*\")"
+    ]
+  }
+}

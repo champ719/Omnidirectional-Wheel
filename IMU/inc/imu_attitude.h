@@ -47,7 +47,15 @@ typedef struct
     float last_yaw;
 } IMU_Attitude_t;
 
+typedef struct
+{
+    fp32 gyro[3];
+    fp32 accel[3];
+    fp32 temperature;
+} IMU_RawData_t;
+
 extern IMU_Attitude_t imu_attitude;
+extern IMU_RawData_t imu_raw_data;
 
 void IMU_Attitude_Init(void);
 void IMU_Attitude_Update(const fp32 gyro_sensor[3],
