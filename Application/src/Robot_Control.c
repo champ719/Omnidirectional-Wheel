@@ -125,7 +125,6 @@ void Robot_Control_Init(void)
     Chassis_Ctrl_Init();
     Gimbal_Ctrl_Init();
     Error_Init();
-    Rotate_Init();
     Motor_Drv_StopAll();
     robot_control.state = ROBOT_STATE_STOPPED;
 }

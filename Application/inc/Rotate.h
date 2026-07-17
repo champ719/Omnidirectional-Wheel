@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-void Rotate_Init(void);
 void Rotate_UpdateActive(float remote_forward,
                          float remote_right,
                          float remote_yaw,

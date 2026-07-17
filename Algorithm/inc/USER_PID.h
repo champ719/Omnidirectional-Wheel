@@ -11,6 +11,8 @@ typedef struct
     float kp;
     float ki;
     float kd;
+    float kf;
+    float target;
     float integral;
     float last_error;
     float derivative;
@@ -27,6 +29,7 @@ void USER_PID_Init(USER_PID_t *pid,
                    float kp,
                    float ki,
                    float kd,
+                   float kf,
                    float integral_max,
                    float integral_step,
                    float integral_dead_zone,

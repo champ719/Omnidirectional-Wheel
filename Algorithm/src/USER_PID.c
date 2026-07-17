@@ -33,6 +33,7 @@ void USER_PID_Init(USER_PID_t *pid,
                    float kp,
                    float ki,
                    float kd,
+                   float kf,
                    float integral_max,
                    float integral_step,
                    float integral_dead_zone,
@@ -45,6 +46,8 @@ void USER_PID_Init(USER_PID_t *pid,
     pid->kp = kp;
     pid->ki = ki;
     pid->kd = kd;
+    pid->kf = kf;
+    pid->target = 0.0f;
     pid->integral_max = fabsf(integral_max);
     pid->integral_step = fabsf(integral_step);
     pid->integral_dead_zone = fabsf(integral_dead_zone);
@@ -158,7 +161,8 @@ float USER_PID_CalculateFromError(USER_PID_t *pid, float dt)
                        (derivative - pid->derivative);
     pid->output = pid->kp * error
                 + pid->integral
-                + pid->kd * pid->derivative;
+                + pid->kd * pid->derivative
+                + pid->kf * pid->target;
     pid->error = error;
     pid->last_error = error;
 
@@ -170,6 +174,7 @@ float USER_PID_Calculate(USER_PID_t *pid,
                          float feedback,
                          float dt)
 {
+    pid->target = target;
     USER_PID_SetError(pid, target, feedback);
     return USER_PID_CalculateFromError(pid, dt);
 }

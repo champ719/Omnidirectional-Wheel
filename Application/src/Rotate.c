@@ -2,11 +2,6 @@
 #include "Chassis.h"
 #include "Gimbal.h"
 
-void Rotate_Init(void)
-{
-    Chassis_Ctrl_ResetRotateExit();
-}
-
 void Rotate_UpdateActive(float remote_forward,
                          float remote_right,
                          float remote_yaw,
@@ -25,13 +20,11 @@ void Rotate_UpdateActive(float remote_forward,
     Chassis_Ctrl_CalculateWheelTargets(1U);
     Gimbal_Ctrl_UpdateRotate(remote_yaw,
                              remote_pitch,
-                             1U,
                              yaw_feedback,
                              yaw_speed_feedback,
                              pitch_feedback,
                              pitch_speed_feedback,
                              imu_yaw_continuous,
-                             chassis_control.wz_target,
                              dt);
 }
 
@@ -49,16 +42,14 @@ uint8_t Rotate_UpdateExit(float remote_pitch,
         return 1U;
     }
 
-    Chassis_Ctrl_CalculateWheelTargets(0U);
+    Chassis_Ctrl_CalculateWheelTargets(1U);
     Gimbal_Ctrl_UpdateRotate(0.0f,
                              remote_pitch,
-                             0U,
                              yaw_feedback,
                              yaw_speed_feedback,
                              pitch_feedback,
                              pitch_speed_feedback,
                              imu_yaw_continuous,
-                             chassis_control.wz_target,
                              dt);
     return 0U;
 }

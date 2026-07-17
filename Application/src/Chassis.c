@@ -4,14 +4,16 @@
 
 #define CHASSIS_INV_SQRT_2 0.70710678118f
 
+static const float chassis_gyro_exit_direction_detect_count = 20.0f;
+static const uint16_t chassis_gyro_exit_direction_detect_timeout_cycles = 100U;
 static const float chassis_gyro_exit_deceleration_radps2 = 8.0f;
 static const float chassis_gyro_exit_brake_margin_rad = 0.10f;
 static const float chassis_gyro_exit_approach_offset_rad = 0.12f;
-static const float chassis_gyro_exit_direction_detect_count = 20.0f;
-static const uint16_t chassis_gyro_exit_direction_detect_timeout_cycles = 100U;
-static const float chassis_gyro_exit_align_min_wz_radps = 0.4f;
 static const float chassis_gyro_exit_tolerance_count = 30.0f;
 static const float chassis_gyro_exit_wheel_stop_radps = 1.0f;
+static const float chassis_gyro_exit_slow_wz_radps = 0.4f;
+static const float chassis_gyro_exit_creep_kp = 2.0f;
+static const float chassis_gyro_exit_creep_min_wz_radps = 0.1f;
 static const uint16_t chassis_gyro_exit_stable_cycles = 50U;
 
 static const float chassis_wheel_direction[CHASSIS_WHEEL_COUNT] =
@@ -64,7 +66,6 @@ static float Chassis_EstimateWz(
     float fr;
     float rl;
     float rr;
-    float rotation_wheel_speed;
 
     fl = wheel_feedback[CHASSIS_WHEEL_FL] *
          chassis_wheel_direction[CHASSIS_WHEEL_FL];
@@ -74,14 +75,14 @@ static float Chassis_EstimateWz(
          chassis_wheel_direction[CHASSIS_WHEEL_RL];
     rr = wheel_feedback[CHASSIS_WHEEL_RR] *
          chassis_wheel_direction[CHASSIS_WHEEL_RR];
-    rotation_wheel_speed = 0.25f * (fl - fr + rl - rr);
 
-    return rotation_wheel_speed / (scale * rotation_radius);
+    return (0.25f * (fl - fr + rl - rr)) /
+           (scale * rotation_radius);
 }
 
 static float Chassis_ForwardEncoderDistance(float target,
-                                            float feedback,
-                                            float encoder_direction)
+                                             float feedback,
+                                             float encoder_direction)
 {
     float distance = (target - feedback) * encoder_direction;
 
@@ -94,119 +95,20 @@ static float Chassis_ForwardEncoderDistance(float target,
     return distance;
 }
 
-static void Chassis_PlanRotateExitTarget(
-    float current_encoder,
-    const float wheel_feedback[CHASSIS_WHEEL_COUNT])
-{
-    float current_wz;
-    float stopping_distance_count;
-    float brake_margin_count;
-
-    current_wz = Chassis_Abs(Chassis_EstimateWz(wheel_feedback));
-    if (current_wz < Chassis_Abs(chassis_control.wz_target)) {
-        current_wz = Chassis_Abs(chassis_control.wz_target);
-    }
-
-    chassis_control.exit_align_remaining_count =
-        Chassis_ForwardEncoderDistance(
-            GIMBAL_YAW_TARGET_COUNT,
-            current_encoder,
-            chassis_control.exit_align_encoder_direction);
-    stopping_distance_count =
-        current_wz * current_wz /
-        (2.0f * chassis_gyro_exit_deceleration_radps2) *
-        GIMBAL_ENCODER_COUNT_PER_RAD;
-    brake_margin_count =
-        chassis_gyro_exit_brake_margin_rad *
-        GIMBAL_ENCODER_COUNT_PER_RAD;
-
-    if (chassis_control.exit_align_remaining_count <
-        stopping_distance_count + brake_margin_count) {
-        chassis_control.exit_align_remaining_count +=
-            GIMBAL_ENCODER_RANGE;
-    }
-
-    chassis_control.exit_align_stable_count = 0U;
-    chassis_control.exit_align_creep_mode = 0U;
-}
-
-static void Chassis_InitializeRotateExit(float current_encoder)
-{
-    chassis_control.exit_align_remaining_count = GIMBAL_ENCODER_RANGE;
-    chassis_control.exit_align_last_encoder_count = current_encoder;
-    chassis_control.exit_align_direction_accumulator = 0.0f;
-    chassis_control.exit_align_encoder_direction = 0.0f;
-    chassis_control.exit_align_stable_count = 0U;
-    chassis_control.exit_align_direction_detect_cycles = 0U;
-    chassis_control.exit_align_direction_detected = 0U;
-    chassis_control.exit_align_creep_mode = 0U;
-    chassis_control.exit_align_initialized = 1U;
-}
-
-static void Chassis_UpdateRotateExitProgress(
-    float current_encoder,
-    const float wheel_feedback[CHASSIS_WHEEL_COUNT])
-{
-    float encoder_delta;
-    float encoder_progress;
-    const float half_range = GIMBAL_ENCODER_RANGE * 0.5f;
-
-    encoder_delta = current_encoder -
-                    chassis_control.exit_align_last_encoder_count;
-    if (encoder_delta < -half_range) {
-        encoder_delta += GIMBAL_ENCODER_RANGE;
-    } else if (encoder_delta > half_range) {
-        encoder_delta -= GIMBAL_ENCODER_RANGE;
-    }
-    chassis_control.exit_align_last_encoder_count = current_encoder;
-
-    if (chassis_control.exit_align_direction_detected == 0U) {
-        if (chassis_control.exit_align_direction_detect_cycles <
-            chassis_gyro_exit_direction_detect_timeout_cycles) {
-            chassis_control.exit_align_direction_detect_cycles++;
-        }
-        chassis_control.exit_align_direction_accumulator += encoder_delta;
-        if (Chassis_Abs(chassis_control.exit_align_direction_accumulator) >=
-            chassis_gyro_exit_direction_detect_count) {
-            chassis_control.exit_align_encoder_direction =
-                (chassis_control.exit_align_direction_accumulator > 0.0f)
-                    ? 1.0f
-                    : -1.0f;
-            chassis_control.exit_align_direction_detected = 1U;
-            Chassis_PlanRotateExitTarget(current_encoder, wheel_feedback);
-        }
-        return;
-    }
-
-    encoder_progress =
-        encoder_delta * chassis_control.exit_align_encoder_direction;
-    if (encoder_progress > 0.0f) {
-        chassis_control.exit_align_remaining_count -= encoder_progress;
-        if (chassis_control.exit_align_remaining_count < 0.0f) {
-            chassis_control.exit_align_remaining_count = 0.0f;
-        }
-    }
-}
-
 static float Chassis_CalculateRotateExitWz(float remaining_count)
 {
-    float remaining_rad;
-    float wz;
-
-    remaining_rad =
+    float remaining_rad =
         remaining_count / GIMBAL_ENCODER_COUNT_PER_RAD -
         chassis_gyro_exit_approach_offset_rad;
-    if (remaining_rad < 0.0f) {
-        remaining_rad = 0.0f;
+    float wz;
+
+    if (remaining_rad <= 0.0f) {
+        return 0.0f;
     }
 
     wz = sqrtf(2.0f * chassis_gyro_exit_deceleration_radps2 *
                remaining_rad);
-    wz = Chassis_Limit(wz, 0.0f, CHASSIS_SMALL_GYRO_WZ_RADPS);
-    if ((wz > 0.0f) && (wz < chassis_gyro_exit_align_min_wz_radps)) {
-        wz = chassis_gyro_exit_align_min_wz_radps;
-    }
-    return wz;
+    return Chassis_Limit(wz, 0.0f, CHASSIS_SMALL_GYRO_WZ_RADPS);
 }
 
 void Chassis_Ctrl_Init(void)
@@ -217,6 +119,7 @@ void Chassis_Ctrl_Init(void)
         chassis_control.wheel_feedback[i] = 0.0f;
         USER_PID_Init(&chassis_control.speed_pid[i],
                       20.0f,
+                      0.0f,
                       0.0f,
                       0.0f,
                       10.0f,
@@ -258,10 +161,10 @@ void Chassis_Ctrl_ResetRotateExit(void)
     chassis_control.exit_align_last_encoder_count = 0.0f;
     chassis_control.exit_align_direction_accumulator = 0.0f;
     chassis_control.exit_align_encoder_direction = 0.0f;
-    chassis_control.exit_align_stable_count = 0U;
+    chassis_control.exit_align_wz_direction = 1.0f;
     chassis_control.exit_align_direction_detect_cycles = 0U;
+    chassis_control.exit_align_stable_count = 0U;
     chassis_control.exit_align_direction_detected = 0U;
-    chassis_control.exit_align_creep_mode = 0U;
     chassis_control.exit_align_initialized = 0U;
 }
 
@@ -308,9 +211,7 @@ void Chassis_Ctrl_SetRotateTargets(float remote_forward,
         Gimbal_Ctrl_CircularError(yaw_feedback,
                                   GIMBAL_YAW_TARGET_COUNT);
     gimbal_clockwise_angle =
-        -relative_encoder_count *
-        GIMBAL_IMU_YAW_TO_ENCODER_DIRECTION /
-        GIMBAL_ENCODER_COUNT_PER_RAD;
+        -relative_encoder_count / GIMBAL_ENCODER_COUNT_PER_RAD;
     angle_cos = cosf(gimbal_clockwise_angle);
     angle_sin = sinf(gimbal_clockwise_angle);
 
@@ -325,87 +226,140 @@ uint8_t Chassis_Ctrl_UpdateRotateExit(
     float yaw_feedback,
     const float wheel_feedback[CHASSIS_WHEEL_COUNT])
 {
-    float approach_offset_count;
+    float encoder_delta;
+    float encoder_progress;
+    float distance;
     float current_wz;
-    float creep_stop_count;
+    float stopping_distance_count;
+    float brake_margin_count;
+    float approach_offset_count;
+    float final_error_count;
+    float correction_wz;
+    float correction_wz_direction;
+    const float half_range = GIMBAL_ENCODER_RANGE * 0.5f;
 
     chassis_control.vx_target = 0.0f;
     chassis_control.vy_target = 0.0f;
 
     if (chassis_control.exit_align_initialized == 0U) {
-        Chassis_InitializeRotateExit(yaw_feedback);
-    } else {
-        Chassis_UpdateRotateExitProgress(yaw_feedback, wheel_feedback);
+        chassis_control.exit_align_last_encoder_count = yaw_feedback;
+        chassis_control.exit_align_wz_direction =
+            (chassis_control.wz_target >= 0.0f) ? 1.0f : -1.0f;
+        chassis_control.exit_align_initialized = 1U;
     }
 
-    chassis_control.exit_align_error_count =
-        Gimbal_Ctrl_CircularError(GIMBAL_YAW_TARGET_COUNT,
-                                  yaw_feedback);
+    encoder_delta = yaw_feedback -
+                    chassis_control.exit_align_last_encoder_count;
+    if (encoder_delta < -half_range) {
+        encoder_delta += GIMBAL_ENCODER_RANGE;
+    } else if (encoder_delta > half_range) {
+        encoder_delta -= GIMBAL_ENCODER_RANGE;
+    }
+    chassis_control.exit_align_last_encoder_count = yaw_feedback;
 
     if (chassis_control.exit_align_direction_detected == 0U) {
-        if (chassis_control.exit_align_direction_detect_cycles >=
-            chassis_gyro_exit_direction_detect_timeout_cycles) {
-            chassis_control.wz_target = 0.0f;
-            if (Chassis_WheelsStopped(wheel_feedback) != 0U) {
-                Chassis_Ctrl_ResetRotateExit();
-                return 1U;
+        chassis_control.exit_align_direction_detect_cycles++;
+        chassis_control.exit_align_direction_accumulator += encoder_delta;
+        chassis_control.wz_target =
+            chassis_control.exit_align_wz_direction *
+            CHASSIS_SMALL_GYRO_WZ_RADPS;
+
+        if (Chassis_Abs(chassis_control.exit_align_direction_accumulator) >=
+            chassis_gyro_exit_direction_detect_count) {
+            chassis_control.exit_align_encoder_direction =
+                (chassis_control.exit_align_direction_accumulator > 0.0f)
+                    ? 1.0f
+                    : -1.0f;
+            distance = Chassis_ForwardEncoderDistance(
+                GIMBAL_YAW_TARGET_COUNT,
+                yaw_feedback,
+                chassis_control.exit_align_encoder_direction);
+            current_wz = Chassis_Abs(Chassis_EstimateWz(wheel_feedback));
+            if (current_wz < Chassis_Abs(chassis_control.wz_target)) {
+                current_wz = Chassis_Abs(chassis_control.wz_target);
             }
-        } else {
-            chassis_control.wz_target = CHASSIS_SMALL_GYRO_WZ_RADPS;
+            stopping_distance_count =
+                current_wz * current_wz /
+                (2.0f * chassis_gyro_exit_deceleration_radps2) *
+                GIMBAL_ENCODER_COUNT_PER_RAD;
+            brake_margin_count =
+                chassis_gyro_exit_brake_margin_rad *
+                GIMBAL_ENCODER_COUNT_PER_RAD;
+            if (distance < stopping_distance_count + brake_margin_count) {
+                distance += GIMBAL_ENCODER_RANGE;
+            }
+            chassis_control.exit_align_remaining_count = distance;
+            chassis_control.exit_align_direction_detected = 1U;
+        } else if (chassis_control.exit_align_direction_detect_cycles >=
+                   chassis_gyro_exit_direction_detect_timeout_cycles) {
+            chassis_control.wz_target = 0.0f;
+            return (Chassis_WheelsStopped(wheel_feedback) != 0U) ? 1U : 0U;
         }
         return 0U;
+    }
+
+    encoder_progress =
+        encoder_delta * chassis_control.exit_align_encoder_direction;
+    if (encoder_progress > 0.0f) {
+        chassis_control.exit_align_remaining_count -= encoder_progress;
+        if (chassis_control.exit_align_remaining_count < 0.0f) {
+            chassis_control.exit_align_remaining_count = 0.0f;
+        }
     }
 
     approach_offset_count =
         chassis_gyro_exit_approach_offset_rad *
         GIMBAL_ENCODER_COUNT_PER_RAD;
-
-    if (chassis_control.exit_align_creep_mode == 0U) {
+    if (chassis_control.exit_align_remaining_count >
+        approach_offset_count) {
+        correction_wz = Chassis_CalculateRotateExitWz(
+            chassis_control.exit_align_remaining_count);
+        if ((correction_wz > 0.0f) &&
+            (correction_wz < chassis_gyro_exit_slow_wz_radps)) {
+            correction_wz = chassis_gyro_exit_slow_wz_radps;
+        }
+        chassis_control.wz_target =
+            chassis_control.exit_align_wz_direction *
+            correction_wz;
         chassis_control.exit_align_stable_count = 0U;
-        if (chassis_control.exit_align_remaining_count <=
-            approach_offset_count) {
-            chassis_control.wz_target = 0.0f;
-            if (Chassis_WheelsStopped(wheel_feedback) != 0U) {
-                chassis_control.exit_align_creep_mode = 1U;
-            }
+        return 0U;
+    }
+
+    final_error_count =
+        Gimbal_Ctrl_CircularError(GIMBAL_YAW_TARGET_COUNT,
+                                  yaw_feedback);
+    chassis_control.exit_align_error_count = final_error_count;
+    if (Chassis_Abs(final_error_count) <=
+        chassis_gyro_exit_tolerance_count) {
+        chassis_control.wz_target = 0.0f;
+        if (Chassis_WheelsStopped(wheel_feedback) != 0U) {
+            chassis_control.exit_align_stable_count++;
         } else {
-            chassis_control.wz_target =
-                Chassis_CalculateRotateExitWz(
-                    chassis_control.exit_align_remaining_count);
+            chassis_control.exit_align_stable_count = 0U;
+        }
+        if (chassis_control.exit_align_stable_count >=
+            chassis_gyro_exit_stable_cycles) {
+            Chassis_Ctrl_ResetRotateExit();
+            return 1U;
         }
         return 0U;
     }
 
-    current_wz = Chassis_Abs(Chassis_EstimateWz(wheel_feedback));
-    creep_stop_count =
-        chassis_gyro_exit_tolerance_count +
-        current_wz * current_wz /
-        (2.0f * chassis_gyro_exit_deceleration_radps2) *
-        GIMBAL_ENCODER_COUNT_PER_RAD;
-
-    if (chassis_control.exit_align_remaining_count <= creep_stop_count) {
-        chassis_control.wz_target = 0.0f;
-        if (Chassis_WheelsStopped(wheel_feedback) != 0U) {
-            if (chassis_control.exit_align_remaining_count <=
-                chassis_gyro_exit_tolerance_count) {
-                if (chassis_control.exit_align_stable_count <
-                    chassis_gyro_exit_stable_cycles) {
-                    chassis_control.exit_align_stable_count++;
-                }
-            } else {
-                chassis_control.exit_align_stable_count = 0U;
-            }
-        }
-    } else {
-        chassis_control.exit_align_stable_count = 0U;
-        chassis_control.wz_target = chassis_gyro_exit_align_min_wz_radps;
-    }
-
-    if (chassis_control.exit_align_stable_count >=
-        chassis_gyro_exit_stable_cycles) {
-        Chassis_Ctrl_ResetRotateExit();
-        return 1U;
-    }
+    chassis_control.exit_align_stable_count = 0U;
+    correction_wz_direction =
+        ((final_error_count > 0.0f) ? 1.0f : -1.0f) *
+        chassis_control.exit_align_wz_direction *
+        chassis_control.exit_align_encoder_direction;
+    correction_wz =
+        Chassis_Abs(final_error_count) /
+        GIMBAL_ENCODER_COUNT_PER_RAD *
+        chassis_gyro_exit_creep_kp;
+    correction_wz = Chassis_Limit(
+        correction_wz,
+        chassis_gyro_exit_creep_min_wz_radps,
+        chassis_gyro_exit_slow_wz_radps);
+    chassis_control.wz_target =
+        correction_wz_direction * correction_wz;
     return 0U;
 }
 

@@ -17,7 +17,7 @@
 #define IMU_BODY_Z_SENSOR_SIGN               (+1.0f)
 
 /* One second of stationary data at the 500 Hz control rate. */
-#define IMU_GYRO_CALIBRATION_SAMPLES         500U
+#define IMU_GYRO_CALIBRATION_SAMPLES         50U
 #define IMU_GYRO_STATIONARY_LIMIT_RADPS      0.20f
 #define IMU_ACCEL_STATIONARY_MIN_MPS2        7.50f
 #define IMU_ACCEL_STATIONARY_MAX_MPS2        12.00f
