@@ -28,7 +28,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "Motor_Task.h"
+#include "Robot_Control.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,7 +98,7 @@ int main(void)
   MX_TIM6_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  Motor_Task_Init();
+  Robot_Control_Init();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */

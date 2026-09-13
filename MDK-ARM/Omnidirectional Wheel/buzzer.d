@@ -1,5 +1,5 @@
-omnidirectional\ wheel/buzzer.o: ..\Device\src\Buzzer.c \
-  ..\Device\inc\Buzzer.h ..\Core\Inc\main.h \
+omnidirectional\ wheel/buzzer.o: ..\User\Device\Buzzer.c \
+  ..\User\Device\Buzzer.h ..\Core\Inc\main.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \

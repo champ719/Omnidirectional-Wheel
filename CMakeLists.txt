@@ -12,13 +12,9 @@ endif()
 
 set(LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/STM32F407IGHx_FLASH.ld")
 
-# Collect user modules using the same top-level layering as the sentry project.
+# Collect all handwritten modules under User.
 file(GLOB_RECURSE USER_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/BSP/*.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Device/*.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Algorithm/*.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Application/*.c"
-    "${CMAKE_CURRENT_SOURCE_DIR}/IMU/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/User/*.c"
 )
 
 set(PROJECT_SOURCES
@@ -81,11 +77,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     Middlewares/Third_Party/FreeRTOS/Source/include
     Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
     Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
-    BSP/inc
-    Device/inc
-    Algorithm/inc
-    Application/inc
-    IMU/inc
+    User/Application
+    User/Control
+    User/Communication
+    User/Device
+    User/Algorithm
+    User/IMU
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

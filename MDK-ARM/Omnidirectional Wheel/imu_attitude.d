@@ -1,6 +1,6 @@
-omnidirectional\ wheel/imu_attitude.o: ..\IMU\src\imu_attitude.c \
-  ..\IMU\inc\imu_attitude.h ..\Core\Inc\struct_typedef.h \
-  ..\IMU\inc\BMI088driver.h ..\Core\Inc\main.h \
+omnidirectional\ wheel/imu_attitude.o: ..\User\IMU\imu_attitude.c \
+  ..\User\IMU\imu_attitude.h ..\Core\Inc\struct_typedef.h \
+  ..\User\IMU\BMI088driver.h ..\Core\Inc\main.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \

@@ -1,9 +1,7 @@
 omnidirectional\ wheel/robot_control.o: \
-  ..\Application\src\Robot_Control.c ..\Application\inc\Robot_Control.h \
-  ..\Application\inc\Chassis.h ..\Algorithm\inc\USER_PID.h \
-  ..\Application\inc\Error.h ..\Application\inc\Gimbal.h \
-  ..\Device\inc\Motor_Drv.h ..\Core\Inc\main.h \
-  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
+  ..\User\Application\Robot_Control.c \
+  ..\User\Application\Robot_Control.h ..\User\Device\Buzzer.h \
+  ..\Core\Inc\main.h ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_def.h \
@@ -29,5 +27,16 @@ omnidirectional\ wheel/robot_control.o: \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\Core\Inc\can.h ..\Device\inc\Remote.h ..\Application\inc\Rotate.h \
-  ..\IMU\inc\imu_attitude.h ..\Core\Inc\struct_typedef.h
+  ..\User\Control\Chassis.h ..\User\Device\motor.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h \
+  ..\Core\Inc\FreeRTOSConfig.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
+  ..\User\Algorithm\PID.h ..\User\Application\Error.h \
+  ..\User\Control\Gimbal.h ..\User\Communication\Remote.h \
+  ..\User\Communication\USER_CAN.h ..\Core\Inc\can.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h

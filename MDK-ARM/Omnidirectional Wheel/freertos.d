@@ -39,6 +39,6 @@ omnidirectional\ wheel/freertos.o: ..\Core\Src\freertos.c \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
-  ..\IMU\inc\BMI088driver.h ..\Core\Inc\struct_typedef.h \
-  ..\IMU\inc\imu_attitude.h ..\Application\inc\Motor_Task.h \
-  ..\Device\inc\Buzzer.h
+  ..\User\IMU\BMI088driver.h ..\Core\Inc\struct_typedef.h \
+  ..\User\IMU\imu_attitude.h ..\User\Application\Robot_Control.h \
+  ..\User\Device\Buzzer.h

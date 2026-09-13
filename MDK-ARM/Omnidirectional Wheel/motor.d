@@ -1,5 +1,5 @@
-omnidirectional\ wheel/motor.o: ..\others\Drv\src\motor.c \
-  ..\others\Drv\inc\motor.h ..\Core\Inc\main.h \
+omnidirectional\ wheel/motor.o: ..\User\Device\motor.c \
+  ..\User\Device\motor.h ..\Core\Inc\main.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
@@ -26,7 +26,12 @@ omnidirectional\ wheel/motor.o: ..\others\Drv\src\motor.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\others\Drv\inc\USER_PID.h ..\others\Drv\inc\Motor_Drv.h \
-  ..\Core\Inc\can.h ..\others\Drv\inc\Remote.h \
-  ..\Core\Inc\imu_attitude.h ..\Core\Inc\struct_typedef.h \
-  ..\Core\Inc\tim.h ..\others\Drv\inc\Buzzer.h
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h \
+  ..\Core\Inc\FreeRTOSConfig.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
+  ..\User\Algorithm\PID.h ..\User\Communication\USER_CAN.h \
+  ..\Core\Inc\can.h ..\User\Control\chassis.h ..\User\Control\gimbal.h

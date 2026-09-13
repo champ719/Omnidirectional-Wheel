@@ -27,7 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "BMI088driver.h"
 #include "imu_attitude.h"
-#include "Motor_Task.h"
+#include "Robot_Control.h"
 #include "Buzzer.h"
 /* USER CODE END Includes */
 
@@ -219,10 +219,10 @@ __weak void OS_MotorCallback(void const * argument)
 __weak void OS_ErrorCallback(void const * argument)
 {
   /* USER CODE BEGIN OS_ErrorCallback */
-  /* Infinite loop */
+  (void)argument;
   for(;;)
   {
-    osDelay(1);
+    osDelay(2);
   }
   /* USER CODE END OS_ErrorCallback */
 }
