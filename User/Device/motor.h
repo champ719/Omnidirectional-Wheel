@@ -15,27 +15,30 @@
 
 typedef struct Motor_t
 {
-  float fb_speed;
-  float fb_angle;
-  float fb_current;
-  uint8_t fb_temp;
-  float total_angle;
+  /* 速度类字段统一用「输出轴 rad/s」：3508 在 FeedbackTrans 里已除以 GEAR_RATE，
+     6020 无减速箱、本来就是输出轴。target_speed 必须与此同量纲，
+     否则速度环恒饱和（差 GEAR_RATE*60/(2π) ≈ 183 倍）。 */
+  float fb_speed;      // 反馈转速 rad/s
+  float fb_angle;      // 机械角 rad，-π..π
+  float fb_current;    // 反馈电流 A
+  uint8_t fb_temp;     // 温度 ℃
+  float total_angle;   // 累计角 rad，-π..π
   float last_angle;
-  float fb_torque;
+  float fb_torque;     // 反馈力矩 N·m = fb_current × K_TORQUE
 
-  float target_speed;
+  float target_speed;  // 目标转速 rad/s，与 fb_speed 同量纲
   float target_angle;
   float target_current;
   uint8_t target_temp;
 
   uint32_t cmd_id;
   uint8_t motor_type;
-  float give_current;
+  float give_current;  // 下发电流 A，3508 限 ±20、6020 限 ±1.6，见 Motor_Trans
   volatile uint32_t feedback_tick;
   volatile uint8_t feedback_received;
 
-  PID_t pid_speed;
-  PID_t pid_position;
+  PID pid_speed;
+  PID pid_position;
 } Motor_t;
 
 void Motor_Init(volatile Motor_t *motor, uint32_t cmd_id, uint8_t motor_type,
@@ -48,5 +51,8 @@ uint8_t Motor_IsOnline(const volatile Motor_t *motor);
 uint8_t Motor_FeedbackHealthy(void);
 void Motor_UPDATE(void);
 void Motor_STOP(void);
+
+/* FreeRTOS 电机任务入口：1ms 一轮，把各模块算好的 give_current 发到 CAN 总线 */
+void OS_MotorCallback(void const *argument);
 
 #endif

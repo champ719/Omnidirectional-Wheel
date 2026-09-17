@@ -1,4 +1,7 @@
 #include "Remote.h"
+#include "Error.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include "usart.h"
 #include <string.h>
 
@@ -9,7 +12,13 @@ extern DMA_HandleTypeDef hdma_usart3_rx;
 #define RC_CHANNEL_FULL_SCALE 660.0f
 #define RC_CHANNEL_DEADBAND   20
 
+/* 拨轮推到此值切换控制方式（满量程 ±660） */
+#define RC_WHEEL_SWITCH_THRESHOLD 600
+/* 遥控输入层任务周期 */
+#define RC_TASK_PERIOD_MS         15U
+
 volatile RC_Ctrl_t rc_ctrl;
+volatile uint8_t Rocker_Ctrl = 1U;
 
 /* 接收缓冲取 2 帧长度。IDLE 事件在总线空闲时触发，缓冲大于一帧才能稳定
    按“空闲”而不是“收满”结束，避免与下一帧粘连错位。 */
@@ -141,4 +150,52 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
     /* 重新武装接收，等待下一帧 */
     HAL_UARTEx_ReceiveToIdle_DMA(&huart3, rc_rx_buf, RC_RX_BUF_LENGTH);
     __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
+}
+
+/************************freertos任务****************************/
+
+/**
+ * @brief 遥控输入层：切换控制方式、处理急停、刷新故障监控。
+ * @note 只做输入处理，不产生运动指令。各控制模块自行调用
+ *       Remote_GetSnapshot() 取本拍输入。
+ */
+void Task_RC_Callback(void)
+{
+    RC_Ctrl_t remote;
+
+    Remote_GetSnapshot(&remote);
+
+    /* 拨轮是自回中的，中位必须保持上一次的选择，所以只在阈值外才改写 */
+    if (remote.rc.ch4 > RC_WHEEL_SWITCH_THRESHOLD) {
+        Rocker_Ctrl = 1U;
+    } else if (remote.rc.ch4 < -RC_WHEEL_SWITCH_THRESHOLD) {
+        Rocker_Ctrl = 0U;
+    }
+
+    /* 右拨杆向下：整车急停。ErrorTask 是最高优先级，唤醒后立即抢占并持续
+       发零电流，所以这里只触发起停，不直接发 Motor_STOP 以免和控制环并发发帧。 */
+    if (remote.rc.s1 == RC_SW_DOWN) {
+        Error_TriggerEmergencyStop();
+    }
+
+    /* 遥控、IMU、CAN、电机反馈的健康检查挂在同一个 15ms 节拍上 */
+    Error_MonitorUpdate();
+}
+
+/**
+ * @brief 遥控输入层任务入口。
+ * @param argument FreeRTOS 任务参数，当前未使用。
+ * @note 优先级 AboveNormal，要抢在 Chassis/Gimbal 控制环前拿到最新帧。
+ */
+void OS_RcCallback(void const *argument)
+{
+    TickType_t last_wake;
+
+    (void)argument;
+    last_wake = xTaskGetTickCount();
+
+    for (;;) {
+        Task_RC_Callback();
+        vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(RC_TASK_PERIOD_MS));
+    }
 }

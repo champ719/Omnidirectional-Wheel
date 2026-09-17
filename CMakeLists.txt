@@ -15,7 +15,6 @@ set(LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/STM32F407IGHx_FLASH.ld")
 set(USER_SOURCES
     User/Application/Error.c
     User/Application/Power_Control.c
-    User/Application/Robot_Control.c
     User/Communication/USER_CAN.c
     User/Control/chassis.c
     User/Control/gimbal.c

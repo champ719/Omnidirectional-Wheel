@@ -55,9 +55,17 @@ typedef struct
 /* Latest decoded remote-control data; exposed globally for debugging. */
 extern volatile RC_Ctrl_t rc_ctrl;
 
+/* 摇杆/键鼠控制方式：由 Task_RC_Callback 按拨轮 ±600 置位，各控制模块直读。
+   1 = 摇杆控制，0 = 键鼠控制。 */
+extern volatile uint8_t Rocker_Ctrl;
+
 void Remote_Init(void);
 uint8_t Remote_IsOnline(void);
 float Remote_NormalizeChannel(int16_t value);
 void Remote_GetSnapshot(RC_Ctrl_t *snapshot);
+
+/* 遥控输入层任务入口。轮询按键、按拨轮切换控制方式、右拨杆急停，并刷新故障监控。 */
+void Task_RC_Callback(void);
+void OS_RcCallback(void const *argument);
 
 #endif

@@ -34,5 +34,13 @@ omnidirectional\ wheel/chassis.o: ..\User\Control\chassis.c \
   ..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
   ..\User\math\PID.h ..\User\math\Slope.h \
-  ..\User\Application\Power_Control.h ..\User\Device\Remote.h \
-  ..\User\Application\Robot_Control.h ..\User\Control\gimbal.h
+  ..\User\Application\Power_Control.h ..\User\Application\Error.h \
+  ..\User\Device\Remote.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h \
+  ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
+  ..\User\Control\gimbal.h

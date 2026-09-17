@@ -1,6 +1,8 @@
 #include "motor.h"
+#include "Error.h"
 #include "USER_CAN.h"
 #include "chassis.h"
+#include "cmsis_os.h"
 #include "gimbal.h"
 
 void Motor_Init(volatile Motor_t *motor, uint32_t cmd_id, uint8_t motor_type,
@@ -15,10 +17,14 @@ void Motor_Init(volatile Motor_t *motor, uint32_t cmd_id, uint8_t motor_type,
   motor->feedback_tick = 0U;
   motor->feedback_received = 0U;
 
-  PID_Set(&motor->pid_speed, kp_speed, ki_speed, kd_speed, kf_speed,
-          out_limit_speed, integral_limit_speed);
-  PID_Set(&motor->pid_position, kp_position, ki_position, kd_position,
-          kf_position, out_limit_position, integral_limit_position);
+  /* 新 PID 库没有 kf 项，两个 kf 入参保留只为不改调用点，实际不参与运算 */
+  (void)kf_speed;
+  (void)kf_position;
+
+  PID_Init(&motor->pid_speed, kp_speed, ki_speed, kd_speed,
+           integral_limit_speed, out_limit_speed);
+  PID_Init(&motor->pid_position, kp_position, ki_position, kd_position,
+           integral_limit_position, out_limit_position);
 }
 
 //把电机目标电流 give_current 转换为 CAN 报文中使用的 16 位控制值
@@ -100,7 +106,27 @@ void Motor_UPDATE(void)
 
 void Motor_STOP(void)
 {
+  /* 四个 3508 共用 0x200 帧，取首个电机拿命令 ID，四路电流给 0 */
   CAN_SendMessage(&hcan1, &chassis.motor_3508[LF], 0, 0, 0, 0);
   CAN_SendMessage(&hcan1, &gimbal.yaw_motor, 0, 0, 0, 0);
   CAN_SendMessage(&hcan2, &gimbal.pitch_motor, 0, 0, 0, 0);
+}
+
+// FreeRTOS 电机任务入口：把各模块算好的 give_current 周期发到 CAN 总线。
+void OS_MotorCallback(void const *argument)
+{
+    (void)argument;
+
+    /* 等底盘/云台任务完成各自的 Chassis_Init / Gimbal_Init 再开始发帧 */
+    osDelay(1500);
+
+    for (;;) {
+        if (Error_GetResult() != ERROR_RESULT_NONE) {
+            Motor_STOP();
+        } else {
+            Motor_UPDATE();
+        }
+        CAN_Service();
+        osDelay(1);
+    }
 }

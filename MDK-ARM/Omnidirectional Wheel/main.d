@@ -41,4 +41,6 @@ omnidirectional\ wheel/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h \
   ..\Core\Inc\can.h ..\Core\Inc\dma.h ..\Core\Inc\spi.h \
   ..\Core\Inc\tim.h ..\Core\Inc\usart.h ..\Core\Inc\gpio.h \
-  ..\User\Application\Robot_Control.h
+  ..\User\Device\Buzzer.h ..\User\Application\Error.h \
+  ..\User\Device\Remote.h ..\User\Communication\USER_CAN.h \
+  ..\User\Device\motor.h ..\User\math\PID.h

@@ -28,7 +28,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "Robot_Control.h"
+#include "Buzzer.h"
+#include "Error.h"
+#include "Remote.h"
+#include "USER_CAN.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,7 +101,12 @@ int main(void)
   MX_TIM6_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  Robot_Control_Init();
+  /* 各模块的任务入口自行完成各自的 Chassis_Init / Gimbal_Init，
+     这里只做与任务无关的外设与状态初始化 */
+  CAN_Init();
+  Remote_Init();
+  Buzzer_Init();
+  Error_Init();
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */

@@ -27,7 +27,6 @@
 /* USER CODE BEGIN Includes */
 #include "BMI088driver.h"
 #include "imu_temp_ctrl.h"
-#include "Robot_Control.h"
 #include "Buzzer.h"
 /* USER CODE END Includes */
 
@@ -54,6 +53,9 @@ osThreadId IMUTaskHandle;
 osThreadId BeepTaskHandle;
 osThreadId MotorTaskHandle;
 osThreadId ErrorTaskHandle;
+osThreadId ChassisHandle;
+osThreadId GimbalHandle;
+osThreadId RcTaskHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -65,6 +67,9 @@ void OS_IMUCallback(void const * argument);
 void OS_BeepCallback(void const * argument);
 void OS_MotorCallback(void const * argument);
 void OS_ErrorCallback(void const * argument);
+void OS_ChassisCallback(void const * argument);
+void OS_GimbalCallback(void const * argument);
+void OS_RcCallback(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -112,24 +117,37 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityLow, 0, 512);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* definition and creation of IMUTask */
-  osThreadDef(IMUTask, OS_IMUCallback, osPriorityHigh, 0, 1024);
+  osThreadDef(IMUTask, OS_IMUCallback, osPriorityNormal, 0, 1024);
   IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
 
   /* definition and creation of BeepTask */
-  osThreadDef(BeepTask, OS_BeepCallback, osPriorityBelowNormal, 0, 128);
+  osThreadDef(BeepTask, OS_BeepCallback, osPriorityNormal, 0, 128);
   BeepTaskHandle = osThreadCreate(osThread(BeepTask), NULL);
 
   /* definition and creation of MotorTask */
-  osThreadDef(MotorTask, OS_MotorCallback, osPriorityAboveNormal, 0, 512);
+  osThreadDef(MotorTask, OS_MotorCallback, osPriorityNormal, 0, 512);
   MotorTaskHandle = osThreadCreate(osThread(MotorTask), NULL);
 
   /* definition and creation of ErrorTask */
   osThreadDef(ErrorTask, OS_ErrorCallback, osPriorityRealtime, 0, 256);
   ErrorTaskHandle = osThreadCreate(osThread(ErrorTask), NULL);
+
+  /* definition and creation of Chassis */
+  osThreadDef(Chassis, OS_ChassisCallback, osPriorityNormal, 0, 256);
+  ChassisHandle = osThreadCreate(osThread(Chassis), NULL);
+
+  /* definition and creation of Gimbal */
+  osThreadDef(Gimbal, OS_GimbalCallback, osPriorityNormal, 0, 256);
+  GimbalHandle = osThreadCreate(osThread(Gimbal), NULL);
+
+  /* definition and creation of RcTask */
+  /* 遥控输入层要抢在控制环前拿到最新帧，优先级高于 Chassis/Gimbal */
+  osThreadDef(RcTask, OS_RcCallback, osPriorityAboveNormal, 0, 256);
+  RcTaskHandle = osThreadCreate(osThread(RcTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -225,6 +243,60 @@ __weak void OS_ErrorCallback(void const * argument)
     osDelay(2);
   }
   /* USER CODE END OS_ErrorCallback */
+}
+
+/* USER CODE BEGIN Header_OS_ChassisCallback */
+/**
+* @brief Function implementing the Chassis thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_OS_ChassisCallback */
+__weak void OS_ChassisCallback(void const * argument)
+{
+  /* USER CODE BEGIN OS_ChassisCallback */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END OS_ChassisCallback */
+}
+
+/* USER CODE BEGIN Header_OS_GimbalCallback */
+/**
+* @brief Function implementing the Gimbal thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_OS_GimbalCallback */
+__weak void OS_GimbalCallback(void const * argument)
+{
+  /* USER CODE BEGIN OS_GimbalCallback */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END OS_GimbalCallback */
+}
+
+/* USER CODE BEGIN Header_OS_RcCallback */
+/**
+* @brief Function implementing the RcTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_OS_RcCallback */
+__weak void OS_RcCallback(void const * argument)
+{
+  /* USER CODE BEGIN OS_RcCallback */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END OS_RcCallback */
 }
 
 /* Private application code --------------------------------------------------*/

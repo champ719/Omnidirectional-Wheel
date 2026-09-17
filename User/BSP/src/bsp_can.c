@@ -3,7 +3,7 @@
 #include "fdcan.h"
 #include "USER_Moto.h"
 #include "Shooter.h"
-#include "Gimbal.h"
+#include "gimbal.h"
 
 CanState can_state;
 

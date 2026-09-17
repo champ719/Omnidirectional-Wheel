@@ -106,7 +106,7 @@ void PowerControl_Apply(void)
   chassis.power_prediction.total_power = 0.0f;
   for (uint8_t motor = 0U; motor < 4U; motor++) {
     chassis.motor_3508[motor].give_current *= scale;
-    chassis.motor_3508[motor].pid_speed.out_put =
+    chassis.motor_3508[motor].pid_speed.output =
         chassis.motor_3508[motor].give_current;
     chassis.power_prediction.model_power[motor] =
         PowerControl_PredictMotor(

@@ -3,7 +3,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "Buzzer.h"
-#include "Chassis.h"
+#include "chassis.h"
+#include "gimbal.h"
 #include "USER_CAN.h"
 #include "motor.h"
 #include "imu_temp_ctrl.h"
@@ -109,7 +110,8 @@ Error_Result_t Error_Update(uint8_t remote_online,
  * @brief 急停专用最高优先级任务入口。
  * @param argument FreeRTOS 任务参数，当前未使用。
  * @note 任务上电后先挂起自身；被急停触发唤醒后不再让出 CPU，持续维护
- *       CAN 并发送零电流。S1 回到中档或上档时执行 MCU 软件复位。
+ *       CAN 并发送零电流。S1 回到中档或上档时只清控制器历史量，保留
+ *       IMU 连续角和云台目标角，然后重新挂起以等待下一次急停。
  */
 void OS_ErrorCallback(void const *argument)
 {
@@ -117,30 +119,52 @@ void OS_ErrorCallback(void const *argument)
     uint32_t buzzer_update_tick;
 
     (void)argument;
-    (void)osThreadSuspend(ErrorTaskHandle);
-
-    error_result = ERROR_RESULT_EMERGENCY_STOP;
-    Chassis_ResetControl();
-    Motor_STOP();
-    Buzzer_PlayEmergencyDoubleBeep();
-    buzzer_update_tick = HAL_GetTick();
-
     for (;;)
     {
-        CAN_Service();
+        /* 上电或上一次急停解除后挂起，由 Error_TriggerEmergencyStop 唤醒。 */
+        (void)osThreadSuspend(ErrorTaskHandle);
+
+        error_result = ERROR_RESULT_EMERGENCY_STOP;
+        Chassis_ResetControl();
+        gimbal.yaw_motor.give_current = 0.0f;
+        gimbal.pitch_motor.give_current = 0.0f;
         Motor_STOP();
+        Buzzer_PlayEmergencyDoubleBeep();
+        buzzer_update_tick = HAL_GetTick();
 
-        if ((HAL_GetTick() - buzzer_update_tick) >= 2U) {
-            buzzer_update_tick += 2U;
-            Buzzer_Update_2ms();
+        for (;;)
+        {
+            CAN_Service();
+            Motor_STOP();
+
+            if ((HAL_GetTick() - buzzer_update_tick) >= 2U) {
+                buzzer_update_tick += 2U;
+                Buzzer_Update_2ms();
+            }
+
+            Remote_GetSnapshot(&remote);
+            if ((remote.rc.s1 == RC_SW_MID) ||
+                (remote.rc.s1 == RC_SW_UP)) {
+                Chassis_ResetControl();
+
+                PID_Clear(&gimbal.yaw_motor.pid_position);
+                PID_Clear(&gimbal.yaw_motor.pid_speed);
+                PID_Clear(&gimbal.pitch_motor.pid_position);
+                PID_Clear(&gimbal.pitch_motor.pid_speed);
+
+                gimbal.yaw.target_yaw_w = 0.0f;
+                gimbal.pitch.target_pitch_w = 0.0f;
+                gimbal.yaw_motor.give_current = 0.0f;
+                gimbal.pitch_motor.give_current = 0.0f;
+
+                emergency_stop_triggered = 0U;
+                Error_MonitorUpdate();
+
+                break;
+            }
+
+        
+            HAL_Delay(1U);
         }
-
-        Remote_GetSnapshot(&remote);
-        if ((remote.rc.s1 == RC_SW_MID) ||
-            (remote.rc.s1 == RC_SW_UP)) {
-            NVIC_SystemReset();
-        }
-
-        HAL_Delay(1U);
     }
 }

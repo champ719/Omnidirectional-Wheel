@@ -46,4 +46,7 @@ extern volatile Gimbal_t gimbal;
 void Gimbal_Init(void);
 void Gimbal_Update(void);
 
+/* FreeRTOS 云台任务入口：2ms 一轮，算出的 give_current 由 MotorTask 发 CAN */
+void OS_GimbalCallback(void const *argument);
+
 #endif 

@@ -41,7 +41,8 @@ omnidirectional\ wheel/error.o: ..\User\Application\Error.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\User\Control\Chassis.h ..\User\Device\motor.h ..\User\math\PID.h \
+  ..\User\Control\chassis.h ..\User\Device\motor.h ..\User\math\PID.h \
   ..\User\math\Slope.h ..\User\Application\Power_Control.h \
-  ..\User\Communication\USER_CAN.h ..\Core\Inc\can.h \
-  ..\User\IMU\inc\imu_temp_ctrl.h ..\User\Device\Remote.h
+  ..\User\Control\gimbal.h ..\User\Communication\USER_CAN.h \
+  ..\Core\Inc\can.h ..\User\IMU\inc\imu_temp_ctrl.h \
+  ..\User\Device\Remote.h
