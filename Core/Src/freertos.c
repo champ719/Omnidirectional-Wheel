@@ -26,7 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "BMI088driver.h"
-#include "imu_attitude.h"
+#include "imu_temp_ctrl.h"
 #include "Robot_Control.h"
 #include "Buzzer.h"
 /* USER CODE END Includes */

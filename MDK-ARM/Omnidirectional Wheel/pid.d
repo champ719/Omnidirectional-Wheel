@@ -1,6 +1,5 @@
-omnidirectional\ wheel/pid.o: ..\User\Algorithm\PID.c \
-  ..\User\Algorithm\PID.h ..\Core\Inc\main.h \
-  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
+omnidirectional\ wheel/pid.o: ..\User\math\PID.c ..\User\math\PID.h \
+  ..\Core\Inc\main.h ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_def.h \

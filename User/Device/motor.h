@@ -7,8 +7,8 @@
 #include "PID.h"
 
 #define GEAR_RATE_3508 (3591.0f / 187.0f)
-#define TYPE_6020 1U
-#define TYPE_3508 2U
+#define DJI_6020 1U
+#define DJI_3508 2U
 #define K_TORQUE_3508 0.3f
 #define K_TORQUE_6020 0.741f
 #define MOTOR_FEEDBACK_TIMEOUT_MS 100U

@@ -1,6 +1,6 @@
-omnidirectional\ wheel/bmi088driver.o: ..\User\IMU\BMI088driver.c \
-  ..\User\IMU\BMI088driver.h ..\Core\Inc\struct_typedef.h \
-  ..\Core\Inc\main.h ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
+omnidirectional\ wheel/bmi088driver.o: ..\User\IMU\BMI088\BMI088driver.c \
+  ..\User\IMU\BMI088\inc\BMI088driver.h ..\Core\Inc\main.h \
+  ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h \
   ..\Core\Inc\stm32f4xx_hal_conf.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_rcc.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_def.h \
@@ -26,4 +26,5 @@ omnidirectional\ wheel/bmi088driver.o: ..\User\IMU\BMI088driver.c \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h \
   ..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h \
-  ..\User\IMU\BMI088reg.h ..\User\IMU\BMI088Middleware.h
+  ..\User\IMU\BMI088\inc\BMI088reg.h \
+  ..\User\IMU\BMI088\inc\BMI088Middleware.h

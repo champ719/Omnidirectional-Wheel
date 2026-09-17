@@ -1,6 +1,8 @@
 #ifndef __CHASSIS_H
 #define __CHASSIS_H
 #include "motor.h"
+#include "Slope.h"
+#include "Power_Control.h"
 
 #define K_ROTATE (0.17f+0.17f)
 #define WHEEL_R  0.07f
@@ -11,15 +13,13 @@
 #define Vx_max 1.8f
 #define Vy_max 1.8f
 #define WHEEL_SPEED_MAX 20.0f
-
-#define TARGET_SPEED_STEP 0.30f
+#define CHASSIS_TRANSLATION_ACCEL_MPS2 2.0f   //控制功率做的缩放
+#define CHASSIS_ROTATION_ACCEL_RADPS2  10.0f  //控制功率做的缩放
 
 
 typedef struct
 {
   Motor_t motor_3508[4];
-
-  float chassis_w_smooth;
 
   struct
   {
@@ -37,15 +37,12 @@ typedef struct
 
   struct
   {
-    float k1[4];
-    float k2[4];
-    float a[4];
-    float torque_scale[4];
-    float power_max;
-    float model_power[4];
-    float total_power;
-    float pre_target_speed[4];
-  } power_prediction;
+    Slope forward;
+    Slope right;
+    Slope rotation;
+  } command_slope;
+
+  ChassisPowerControl_t power_prediction;
 
   struct 
   {
@@ -61,6 +58,7 @@ typedef struct
 extern volatile Chassis_t chassis;
 
 void Chassis_Init(void);
+void Chassis_ResetControl(void);
 void Chassis_Update(void);
 
 #endif

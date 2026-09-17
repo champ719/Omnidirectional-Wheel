@@ -34,5 +34,5 @@ omnidirectional\ wheel/user_can.o: ..\User\Communication\USER_CAN.c \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
-  ..\User\Algorithm\PID.h ..\User\Control\chassis.h \
-  ..\User\Control\gimbal.h
+  ..\User\math\PID.h ..\User\Control\chassis.h ..\User\math\Slope.h \
+  ..\User\Application\Power_Control.h ..\User\Control\gimbal.h

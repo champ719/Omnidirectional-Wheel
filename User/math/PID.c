@@ -20,9 +20,10 @@ void PID_Position_Calc(volatile PID_t *pid, float target, float feedback)
   float err = target - feedback;
   float out;
 
-  if (err > 3.14159265f) {
+  while (err > 3.14159265f) {
     err -= 6.28318531f;
-  } else if (err < -3.14159265f) {
+  }
+  while (err < -3.14159265f) {
     err += 6.28318531f;
   }
 

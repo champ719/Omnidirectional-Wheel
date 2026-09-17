@@ -21,6 +21,7 @@ void Motor_Init(volatile Motor_t *motor, uint32_t cmd_id, uint8_t motor_type,
           kf_position, out_limit_position, integral_limit_position);
 }
 
+//把电机目标电流 give_current 转换为 CAN 报文中使用的 16 位控制值
 uint16_t Motor_Trans(volatile Motor_t *motor)
 {
   float current;
@@ -37,10 +38,10 @@ uint16_t Motor_Trans(volatile Motor_t *motor)
     return 0U;
   }
 
-  if (motor->motor_type == TYPE_3508) {
+  if (motor->motor_type == DJI_3508) {
     current_limit = 20.0f;
     command_limit = 16384.0f;
-  } else if (motor->motor_type == TYPE_6020) {
+  } else if (motor->motor_type == DJI_6020) {
     current_limit = 1.6f;
     command_limit = 25000.0f;
   } else {
@@ -57,6 +58,7 @@ uint16_t Motor_Trans(volatile Motor_t *motor)
   return (uint16_t)command;
 }
 
+//电机掉线保护
 uint8_t Motor_IsOnline(const volatile Motor_t *motor)
 {
   if ((motor == NULL) || (motor->feedback_received == 0U)) {
@@ -77,8 +79,9 @@ uint8_t Motor_FeedbackHealthy(void)
     }
   }
 
-  return ((Motor_IsOnline(&gimbal.yaw_motor) != 0U) &&
-          (Motor_IsOnline(&gimbal.pitch_motor) != 0U)) ? 1U : 0U;
+  /* Pitch motor feedback check is temporarily disabled because the motor is
+     unavailable. Keep chassis and yaw motor offline protection active. */
+  return (Motor_IsOnline(&gimbal.yaw_motor) != 0U) ? 1U : 0U;
 }
 
 void Motor_UPDATE(void)

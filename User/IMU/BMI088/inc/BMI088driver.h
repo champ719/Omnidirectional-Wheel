@@ -1,7 +1,7 @@
 #ifndef BMI088DRIVER_H
 #define BMI088DRIVER_H
 
-#include "struct_typedef.h"
+#include "stdint.h"
 #include "main.h"
 
 #define BMI088_TEMP_FACTOR 0.125f
@@ -46,7 +46,7 @@
 #define BMI088_GYRO_125_SEN 0.000066579027251980956150958662738366f
 
 
-typedef struct __packed BMI088_RAW_DATA
+typedef struct __attribute__((packed))
 {
     uint8_t status;
     int16_t accel[3];
@@ -57,10 +57,10 @@ typedef struct __packed BMI088_RAW_DATA
 typedef struct BMI088_REAL_DATA
 {
     uint8_t status;
-    fp32 accel[3];
-    fp32 temp;
-    fp32 gyro[3];
-    fp32 time;
+    float accel[3];
+    float temp;
+    float gyro[3];
+    float time;
 } bmi088_real_data_t;
 
 
@@ -91,10 +91,10 @@ enum
 
 
 extern uint8_t BMI088_init(void);
-extern bool_t bmi088_accel_init(void);
-extern bool_t bmi088_gyro_init(void);
+extern uint8_t bmi088_accel_init(void);
+extern uint8_t bmi088_gyro_init(void);
 
-extern void BMI088_read(fp32 gyro[3], fp32 accel[3], fp32 *temperate);
+extern void BMI088_read(float gyro[3], float accel[3], float *temperate);
 
 
 

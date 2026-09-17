@@ -36,7 +36,7 @@ static void FeedbackTrans(volatile Motor_t *motor, const uint8_t *rx_data)
     motor->feedback_tick = HAL_GetTick();
     motor->feedback_received = 1U;
 
-    if (motor->motor_type == TYPE_3508) {
+    if (motor->motor_type == DJI_3508) {
         motor->fb_angle =
             (float)(((uint16_t)rx_data[0] << 8U) | rx_data[1]) /
             GEAR_RATE_3508 / 8192.0f * 2.0f * 3.1415f;
@@ -44,7 +44,7 @@ static void FeedbackTrans(volatile Motor_t *motor, const uint8_t *rx_data)
             (float)((int16_t)(((uint16_t)rx_data[2] << 8U) | rx_data[3])) /
             GEAR_RATE_3508 * 2.0f * 3.1415f / 60.0f;
         motor->fb_torque = motor->fb_current * K_TORQUE_3508;
-    } else if (motor->motor_type == TYPE_6020) {
+    } else if (motor->motor_type == DJI_6020) {
         motor->fb_angle =
             (float)(((uint16_t)rx_data[0] << 8U) | rx_data[1]) /
             8192.0f * 2.0f * 3.1415f;
@@ -60,7 +60,7 @@ static void FeedbackTrans(volatile Motor_t *motor, const uint8_t *rx_data)
     }
 
     change = motor->fb_angle - motor->last_angle;
-    half_range = (motor->motor_type == TYPE_3508) ?
+    half_range = (motor->motor_type == DJI_3508) ?
         (3.1415f / 19.0f) : 3.1415f;
     full_range = half_range * 2.0f;
     if (change > half_range) {

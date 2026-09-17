@@ -52,6 +52,9 @@ typedef struct
     uint32_t update_sequence;
 } RC_Ctrl_t;
 
+/* Latest decoded remote-control data; exposed globally for debugging. */
+extern volatile RC_Ctrl_t rc_ctrl;
+
 void Remote_Init(void);
 uint8_t Remote_IsOnline(void);
 float Remote_NormalizeChannel(int16_t value);

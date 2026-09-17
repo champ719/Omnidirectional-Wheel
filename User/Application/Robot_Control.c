@@ -11,20 +11,21 @@
 #include <math.h>
 #include <string.h>
 
-#define ROBOT_JOYSTICK_YAW_SPEED_RADPS       10.0f
-#define ROBOT_JOYSTICK_PITCH_SPEED_RADPS      2.3f
-#define ROBOT_MOUSE_YAW_RAD_PER_COUNT         0.0015f
-#define ROBOT_MOUSE_PITCH_RAD_PER_COUNT       0.0010f
+#define ROBOT_JOYSTICK_YAW_SPEED_RADPS       10.0f//云台yaw目标角速度
+#define ROBOT_JOYSTICK_PITCH_SPEED_RADPS      2.3f//云台pitch目标角速度
+#define ROBOT_MOUSE_YAW_RAD_PER_COUNT         0.0015f//鼠标y轴灵敏度
+#define ROBOT_MOUSE_PITCH_RAD_PER_COUNT       0.0010f//鼠标x轴灵敏度
 #define ROBOT_MOUSE_MAX_DELTA_RAD              0.25f
 #define ROBOT_KEYBOARD_NORMAL_SPEED_SCALE      0.60f
-#define ROBOT_KEYBOARD_FAST_SPEED_SCALE        1.00f
-#define ROBOT_KEYBOARD_SLOW_SPEED_SCALE        0.30f
+#define ROBOT_KEYBOARD_FAST_SPEED_SCALE        1.00f//shift加速
+#define ROBOT_KEYBOARD_SLOW_SPEED_SCALE        0.30f//ctrl减速
 
 Robot_Control_t robot_control;
 
 static uint32_t robot_last_mouse_sequence;
 static Robot_ControlSource_t robot_previous_source;
 
+// 将数值限制在指定的最小值和最大值之间。
 static float Robot_Control_Limit(float value, float minimum, float maximum)
 {
     if (value > maximum) {
@@ -36,11 +37,13 @@ static float Robot_Control_Limit(float value, float minimum, float maximum)
     return value;
 }
 
+// 判断指定按键是否处于按下状态。
 static uint8_t Robot_Control_KeyPressed(uint16_t keys, uint16_t key)
 {
     return ((keys & key) != 0U) ? 1U : 0U;
 }
 
+// 根据遥控器拨杆状态选择底盘控制模式。
 static Robot_ChassisMode_t Robot_Control_JoystickMode(uint8_t switch_value)
 {
     if (switch_value == RC_SW_UP) {
@@ -52,6 +55,7 @@ static Robot_ChassisMode_t Robot_Control_JoystickMode(uint8_t switch_value)
     return ROBOT_CHASSIS_FOLLOW;
 }
 
+// 根据键盘 Q/E 按键选择底盘控制模式。
 static Robot_ChassisMode_t Robot_Control_KeyboardMode(uint16_t keys)
 {
     uint8_t counterclockwise = Robot_Control_KeyPressed(keys, RC_KEY_Q);
@@ -64,6 +68,7 @@ static Robot_ChassisMode_t Robot_Control_KeyboardMode(uint16_t keys)
         ROBOT_CHASSIS_GYRO_CCW : ROBOT_CHASSIS_GYRO_CW;
 }
 
+// 根据键盘 Shift/Ctrl 按键选择底盘速度比例。
 static float Robot_Control_KeyboardSpeedScale(uint16_t keys)
 {
     if (Robot_Control_KeyPressed(keys, RC_KEY_CTRL) != 0U) {
@@ -75,6 +80,7 @@ static float Robot_Control_KeyboardSpeedScale(uint16_t keys)
     return ROBOT_KEYBOARD_NORMAL_SPEED_SCALE;
 }
 
+// 将前后和左右输入归一化，避免合成后的平移幅值超过限制。
 static void Robot_Control_NormalizeTranslation(float *forward, float *right)
 {
     float magnitude = sqrtf((*forward * *forward) + (*right * *right));
@@ -85,6 +91,7 @@ static void Robot_Control_NormalizeTranslation(float *forward, float *right)
     }
 }
 
+// 将遥控器摇杆输入转换为机器人控制指令。
 static void Robot_Control_FromJoystick(const RC_Ctrl_t *remote)
 {
     Robot_Command_t *command = &robot_control.command;
@@ -103,6 +110,7 @@ static void Robot_Control_FromJoystick(const RC_Ctrl_t *remote)
     command->speed_scale = 1.0f;
 }
 
+// 将键盘和鼠标输入转换为机器人控制指令。
 static void Robot_Control_FromKeyboardMouse(const RC_Ctrl_t *remote)
 {
     Robot_Command_t *command = &robot_control.command;
@@ -134,6 +142,7 @@ static void Robot_Control_FromKeyboardMouse(const RC_Ctrl_t *remote)
     }
 }
 
+// 读取遥控器快照并更新当前机器人控制指令。
 static void Robot_Control_UpdateCommand(void)
 {
     RC_Ctrl_t remote;
@@ -166,6 +175,7 @@ static void Robot_Control_UpdateCommand(void)
     robot_previous_source = source;
 }
 
+// 将系统错误结果转换为机器人控制状态。
 static Robot_ControlState_t Robot_Control_MapError(Error_Result_t error)
 {
     switch (error) {
@@ -175,8 +185,6 @@ static Robot_ControlState_t Robot_Control_MapError(Error_Result_t error)
         return ROBOT_STATE_REMOTE_OFFLINE;
     case ERROR_RESULT_EMERGENCY_STOP:
         return ROBOT_STATE_EMERGENCY_STOP;
-    case ERROR_RESULT_DIRECTION_UNCALIBRATED:
-        return ROBOT_STATE_DIRECTION_UNCALIBRATED;
     case ERROR_RESULT_IMU_NOT_READY:
         return ROBOT_STATE_IMU_NOT_READY;
     case ERROR_RESULT_MOTOR_FEEDBACK_TIMEOUT:
@@ -189,6 +197,7 @@ static Robot_ControlState_t Robot_Control_MapError(Error_Result_t error)
     }
 }
 
+// 初始化机器人控制模块及其底盘、云台和外设子模块。
 void Robot_Control_Init(void)
 {
     memset(&robot_control, 0, sizeof(robot_control));
@@ -206,23 +215,30 @@ void Robot_Control_Init(void)
     Error_Init();
 }
 
+// 执行一轮机器人控制流程，包括输入处理、故障检查、底盘和云台控制以及电机输出。
 void Robot_Control_Update(void)
 {
     Error_Result_t error;
 
     Robot_Control_UpdateCommand();
     CAN_Service();
+    Error_MonitorUpdate();
     error = Error_GetResult();
 
     if (error != ERROR_RESULT_NONE) {
         robot_control.state = Robot_Control_MapError(error);
+        Chassis_ResetControl();
         Motor_STOP();
+        if (error == ERROR_RESULT_EMERGENCY_STOP) {
+            Error_TriggerEmergencyStop();
+        }
         return;
     }
 
     if ((Remote_IsOnline() == 0U) ||
         (robot_control.command.source == ROBOT_CONTROL_SOURCE_NONE)) {
         robot_control.state = ROBOT_STATE_STOPPED;
+        Chassis_ResetControl();
         Motor_STOP();
         return;
     }
@@ -235,6 +251,7 @@ void Robot_Control_Update(void)
     Motor_UPDATE();
 }
 
+// FreeRTOS 电机任务回调，按固定周期执行机器人控制流程。
 void OS_MotorCallback(void const *argument)
 {
     TickType_t last_wake;

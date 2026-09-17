@@ -34,6 +34,6 @@ omnidirectional\ wheel/gimbal.o: ..\User\Control\gimbal.c \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
-  ..\User\Algorithm\PID.h ..\User\Application\Robot_Control.h \
-  ..\User\Control\chassis.h ..\User\IMU\imu_attitude.h \
-  ..\Core\Inc\struct_typedef.h
+  ..\User\math\PID.h ..\User\Application\Robot_Control.h \
+  ..\User\Control\chassis.h ..\User\math\Slope.h \
+  ..\User\Application\Power_Control.h ..\User\IMU\inc\imu_temp_ctrl.h

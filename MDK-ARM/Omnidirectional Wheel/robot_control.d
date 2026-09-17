@@ -35,8 +35,9 @@ omnidirectional\ wheel/robot_control.o: \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
-  ..\User\Algorithm\PID.h ..\User\Application\Error.h \
-  ..\User\Control\Gimbal.h ..\User\Communication\Remote.h \
+  ..\User\math\PID.h ..\User\math\Slope.h \
+  ..\User\Application\Power_Control.h ..\User\Application\Error.h \
+  ..\User\Control\Gimbal.h ..\User\Device\Remote.h \
   ..\User\Communication\USER_CAN.h ..\Core\Inc\can.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h

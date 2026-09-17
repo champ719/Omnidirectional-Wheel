@@ -7,9 +7,9 @@ extern DMA_HandleTypeDef hdma_usart3_rx;
 
 #define RC_ONLINE_TIMEOUT_MS  100U
 #define RC_CHANNEL_FULL_SCALE 660.0f
-#define RC_CHANNEL_DEADBAND   0
+#define RC_CHANNEL_DEADBAND   20
 
-static RC_Ctrl_t rc_ctrl;
+volatile RC_Ctrl_t rc_ctrl;
 
 /* 接收缓冲取 2 帧长度。IDLE 事件在总线空闲时触发，缓冲大于一帧才能稳定
    按“空闲”而不是“收满”结束，避免与下一帧粘连错位。 */
@@ -51,7 +51,7 @@ static uint8_t Remote_DecodeFrame(const uint8_t *f)
 
 void Remote_Init(void)
 {
-    memset(&rc_ctrl, 0, sizeof(rc_ctrl));
+    rc_ctrl = (RC_Ctrl_t){0};
 
     __HAL_UART_CLEAR_IDLEFLAG(&huart3);
     HAL_UARTEx_ReceiveToIdle_DMA(&huart3, rc_rx_buf, RC_RX_BUF_LENGTH);

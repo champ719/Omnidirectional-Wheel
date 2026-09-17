@@ -12,9 +12,36 @@ endif()
 
 set(LINKER_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/STM32F407IGHx_FLASH.ld")
 
-# Collect all handwritten modules under User.
-file(GLOB_RECURSE USER_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/User/*.c"
+set(USER_SOURCES
+    User/Application/Error.c
+    User/Application/Power_Control.c
+    User/Application/Robot_Control.c
+    User/Communication/USER_CAN.c
+    User/Control/chassis.c
+    User/Control/gimbal.c
+    User/Device/Buzzer.c
+    User/Device/motor.c
+    User/Device/Remote.c
+    User/math/Crc.c
+    User/math/Filter.c
+    User/math/PID.c
+    User/math/Slope.c
+    User/BSP/src/bsp_dwt.c
+    User/IMU/BMI088/BMI088driver.c
+    User/IMU/BMI088/BMI088Middleware.c
+    User/IMU/Algorithm/src/kalman_filter.c
+    User/IMU/Algorithm/src/QuaternionEKF.c
+    User/IMU/src/imu_temp_ctrl.c
+)
+
+set(CMSIS_DSP_SOURCES
+    Drivers/CMSIS/DSP/Source/FastMathFunctions/arm_atan2_f32.c
+    Drivers/CMSIS/DSP/Source/MatrixFunctions/arm_mat_add_f32.c
+    Drivers/CMSIS/DSP/Source/MatrixFunctions/arm_mat_init_f32.c
+    Drivers/CMSIS/DSP/Source/MatrixFunctions/arm_mat_inverse_f32.c
+    Drivers/CMSIS/DSP/Source/MatrixFunctions/arm_mat_mult_f32.c
+    Drivers/CMSIS/DSP/Source/MatrixFunctions/arm_mat_sub_f32.c
+    Drivers/CMSIS/DSP/Source/MatrixFunctions/arm_mat_trans_f32.c
 )
 
 set(PROJECT_SOURCES
@@ -32,6 +59,7 @@ set(PROJECT_SOURCES
     Core/Src/freertos.c
 
     ${USER_SOURCES}
+    ${CMSIS_DSP_SOURCES}
 
     Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c
     Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c
@@ -74,6 +102,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     Drivers/STM32F4xx_HAL_Driver/Inc/Legacy
     Drivers/CMSIS/Device/ST/STM32F4xx/Include
     Drivers/CMSIS/Include
+    Drivers/CMSIS/DSP/Include
+    Drivers/CMSIS/DSP/PrivateInclude
     Middlewares/Third_Party/FreeRTOS/Source/include
     Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
     Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
@@ -81,13 +111,17 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     User/Control
     User/Communication
     User/Device
-    User/Algorithm
-    User/IMU
+    User/math
+    User/BSP/inc
+    User/IMU/inc
+    User/IMU/BMI088/inc
+    User/IMU/Algorithm/inc
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     USE_HAL_DRIVER
     STM32F407xx
+    ARM_MATH_CM4
     HSE_VALUE=12000000U
 )
 

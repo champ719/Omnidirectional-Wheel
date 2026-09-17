@@ -3,7 +3,7 @@
 #include "PID.h"
 #include "Robot_Control.h"
 #include "chassis.h"
-#include "imu_attitude.h"
+#include "imu_temp_ctrl.h"
 #include "math.h"
 
 
@@ -21,11 +21,11 @@ static float wrap_pi(float a)
 
 void Gimbal_Init(void)
 {
-  Motor_Init(&gimbal.yaw_motor, 0x1FF, TYPE_6020,
+  Motor_Init(&gimbal.yaw_motor, 0x1FF, DJI_6020,
     0.3f, 0.12f, 0.05f, 0.18f, 1.6f, 0.8f,
     22.0f, 0.0f, 35.0f, 0.0f,5.0f, 4.0f);
   
-  Motor_Init(&gimbal.pitch_motor, 0x1FF, TYPE_6020,
+  Motor_Init(&gimbal.pitch_motor, 0x1FF, DJI_6020,
     0.1f, 0.02f, 0.05f, 0.25f, 1.6f, 0.8f,
     15.0f, 0.0f, 5.0f, 0.0f, 3.0f, 0.5f);
 
@@ -77,10 +77,13 @@ void Pitch_Speed_Calc(void)
 
 void Gimbal_Update(void)
 {
-  gimbal.gyro.yaw_w = imu_attitude.gyro_body[2];
-  gimbal.gyro.pitch_w = imu_attitude.gyro_body[1];
+  float gyro_body[3];
+
+  IMU_Attitude_GetGyroBody(gyro_body);
+  gimbal.gyro.yaw_w = gyro_body[2];
+  gimbal.gyro.pitch_w = gyro_body[1];
   gimbal.pitch.pitch_angle = wrap_pi(gimbal.pitch_motor.total_angle - gimbal.pitch.zero_angle);
-  gimbal.yaw.yaw_angle = imu_attitude.yaw_continuous;
+  gimbal.yaw.yaw_angle = IMU_Attitude_GetYawContinuousRad();
   gimbal.yaw.fb_yaw_w = - gimbal.gyro.yaw_w;
   gimbal.yaw.machine_yaw_angle = wrap_pi(gimbal.yaw_motor.fb_angle - gimbal.yaw.zero_angle);
 

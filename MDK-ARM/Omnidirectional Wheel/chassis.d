@@ -33,5 +33,6 @@ omnidirectional\ wheel/chassis.o: ..\User\Control\chassis.c \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h \
   ..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h \
-  ..\User\Algorithm\PID.h ..\User\Communication\Remote.h \
+  ..\User\math\PID.h ..\User\math\Slope.h \
+  ..\User\Application\Power_Control.h ..\User\Device\Remote.h \
   ..\User\Application\Robot_Control.h ..\User\Control\gimbal.h
