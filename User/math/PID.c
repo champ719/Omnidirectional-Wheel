@@ -11,6 +11,7 @@ void PID_Init(volatile PID *pid,float p,float i,float d,float maxI,float maxOut)
 	pid->maxIntegral=maxI;
 	pid->maxOutput=maxOut;
 	pid->deadzone=0;
+	PID_Clear(pid);
 }
 
 //初始化微分先行pid参数
@@ -63,12 +64,25 @@ void PIDRegulation(DEPID *vPID,float reference, float feedback, float differenti
 //单级pid计算
 void PID_SingleCalc(volatile PID *pid,float reference,float feedback)
 {
-	//更新数据
-	pid->lastError=pid->error;
+	float current_error;
+
 	if(ABS(reference-feedback) < pid->deadzone)//若误差在死区内则error直接置0
-		pid->error=0;
+		current_error=0;
 	else
-		pid->error=reference-feedback;
+		current_error=reference-feedback;
+
+	/* PID_Clear 后的第一拍令前后误差相等，使 D 项为 0。 */
+	if (pid->initialized == 0U)
+	{
+		pid->error=current_error;
+		pid->lastError=current_error;
+		pid->initialized=1U;
+	}
+	else
+	{
+		pid->lastError=pid->error;
+		pid->error=current_error;
+	}
 	//计算微分
 	pid->output=(pid->error-pid->lastError)*pid->kd;
 	//计算比例
@@ -123,6 +137,7 @@ void PID_Clear(volatile PID *pid)
 	pid->lastError=0;
 	pid->integral=0;
 	pid->output=0;
+	pid->initialized=0U;
 }
 
 void DEPID_Clear(DEPID *pid)

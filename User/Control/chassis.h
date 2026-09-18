@@ -8,9 +8,6 @@
 #define RF  1U
 #define LB  2U
 #define RB  3U
-#define CHASSIS_TRANSLATION_ACCEL_MPS2 2.0f   //控制功率做的缩放
-#define CHASSIS_ROTATION_ACCEL_RADPS2  10.0f  //控制功率做的缩放
-
 typedef enum
 {
 	ChassisMode_Follow = 0,	// 底盘跟随云台模式
@@ -72,7 +69,7 @@ typedef struct _Chassis
 	struct
 	{
 		PID pid;				// 旋转PID，由relativeAngle计算底盘旋转速度
-		float relativeAngle;	// 云台与底盘的偏离角 单位度，取自 gimbal.yaw.machine_yaw_angle
+		float relativeAngle;	// 云台与底盘的偏离角，单位 rad，取自 gimbal.yaw.machine_yaw_angle
 		Chassis_Mode_e mode;		// 底盘模式 小陀螺或者底盘跟随
 		float ratio;				// 旋转速度系数 占最大速度的多少
 	} rotate;

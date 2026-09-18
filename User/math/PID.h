@@ -16,6 +16,7 @@ typedef struct _PID
 	float integral,maxIntegral;//积分、积分限幅
 	float output,maxOutput;//输出、输出限幅
 	float deadzone;//死区
+	uint8_t initialized;//首次计算标志，用于抑制清零后的 D 项冲击
 }PID;
 
 /*定义结构体和公用体*/

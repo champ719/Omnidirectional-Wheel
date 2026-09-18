@@ -27,6 +27,8 @@ static uint32_t gimbal_last_mouse_sequence;
    所以窗口按“收到的帧数”算，和任务周期无关。 */
 static AverFilter gimbal_mouse_yaw_filter;
 static AverFilter gimbal_mouse_pitch_filter;
+static volatile uint8_t gimbal_hold_yaw_pending;
+static volatile uint32_t gimbal_hold_yaw_imu_sequence;
 
 static float wrap_pi(float a)
 {
@@ -44,6 +46,9 @@ static float limit_range(float value, float minimum, float maximum)
 
 void Gimbal_Init(void)
 {
+  RC_Ctrl_t remote;
+  float current_yaw;
+
   Motor_Init(&gimbal.yaw_motor, 0x1FF, DJI_6020,
     0.5f, 0.0f, 0.0f, 0.18f, 1.6f, 0.8f,
     8.0f, 0.0f, 0.02f, 0.0f,5.0f, 4.0f);
@@ -52,20 +57,41 @@ void Gimbal_Init(void)
     0.1f, 0.02f, 0.05f, 0.25f, 1.6f, 0.8f,
     0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.5f);
 
+  gimbal.gyro.yaw_w = 0.0f;
+  gimbal.gyro.pitch_w = 0.0f;
   gimbal.yaw.zero_angle = 1.04077f;
-  /* 显式对齐到当前朝向，使上电瞬间位置环误差为 0。原来靠 .bss 清零恰好等于
-     IMU 上电时的 YawTotalAngle = 0 才对得上，是巧合；IMU 初始化方式一变就会
-     上电抖一下。IMU 未就绪时本函数返回 0，与原来的行为一致。 */
-  gimbal.yaw.target_yaw_angle = IMU_Attitude_GetYawContinuousRad();
+  /* 任务入口会等待 IMU 就绪；这里对齐当前朝向，使首次位置环误差为 0。 */
+  current_yaw = IMU_Attitude_GetYawContinuousRad();
+  gimbal.yaw.yaw_angle = current_yaw;
+  gimbal.yaw.target_yaw_angle = current_yaw;
+  gimbal.yaw.target_yaw_w = 0.0f;
+  gimbal.yaw.fb_yaw_w = 0.0f;
+  gimbal.yaw.machine_yaw_angle = 0.0f;
   gimbal.pitch.zero_angle = 5.1847f;
+  gimbal.pitch.pitch_angle = 0.0f;
   gimbal.pitch.target_pitch_angle = 0.0f;
+  gimbal.pitch.fb_pitch_w = 0.0f;
   gimbal.pitch.target_pitch_w = 0.0f;
   gimbal.pitch.k_gravity_comp = 0.32f;
   gimbal.pitch.gravity_comp_offset = 0.55059f;
   gimbal.pitch.gravity_comp = 0.0f;
-  gimbal_last_mouse_sequence = 0U;
+  gimbal.yaw_motor.give_current = 0.0f;
+  gimbal.pitch_motor.give_current = 0.0f;
+
+  Remote_GetSnapshot(&remote);
+  gimbal_last_mouse_sequence = remote.update_sequence;
   Filter_InitAverFilter(&gimbal_mouse_yaw_filter, GIMBAL_MOUSE_FILTER_SIZE);
   Filter_InitAverFilter(&gimbal_mouse_pitch_filter, GIMBAL_MOUSE_FILTER_SIZE);
+}
+
+void Gimbal_HoldCurrentYawAfterEmergencyStop(void)
+{
+  gimbal_hold_yaw_imu_sequence = IMU_Attitude_GetUpdateSequence();
+  gimbal_hold_yaw_pending = 1U;
+  gimbal.yaw.target_yaw_w = 0.0f;
+  gimbal.yaw_motor.give_current = 0.0f;
+  PID_Clear(&gimbal.yaw_motor.pid_position);
+  PID_Clear(&gimbal.yaw_motor.pid_speed);
 }
 
 /* 本拍的云台增量：摇杆按角速度 × 任务周期积分，鼠标按帧增量。 */
@@ -76,13 +102,13 @@ static void Gimbal_ReadCommand(float *yaw_delta, float *pitch_delta)
   Remote_GetSnapshot(&remote);
 
   if (Rocker_Ctrl != 0U) {
-    /* 摇杆居中时 Remote_NormalizeChannel 返回精确的 0，不需要额外死区 */
+
     *yaw_delta = Remote_NormalizeChannel(remote.rc.ch0) *
                  GIMBAL_JOYSTICK_YAW_SPEED_RADPS * GIMBAL_TASK_PERIOD_S * (-1.0f); 
     *pitch_delta = Remote_NormalizeChannel(remote.rc.ch1) *
                    GIMBAL_JOYSTICK_PITCH_SPEED_RADPS * GIMBAL_TASK_PERIOD_S;
     gimbal_last_mouse_sequence = remote.update_sequence;
-    /* 清掉窗口里上一次键鼠模式的残留，下次切回来从零起算 */
+
     Filter_AverClear(&gimbal_mouse_yaw_filter);
     Filter_AverClear(&gimbal_mouse_pitch_filter);
     return;
@@ -133,19 +159,13 @@ static void Pitch_Speed_Calc(float angle_change)
   gimbal.pitch.target_pitch_w = 0.0f;
   gimbal.pitch.gravity_comp = 0.0f;
   gimbal.pitch_motor.give_current = 0.0f;
-
-  /* 不驱动也要清积分，避免重新使能时把积攒的量一次性打出去 */
   PID_Clear(&gimbal.pitch_motor.pid_position);
-  PID_Clear(&gimbal.pitch_motor.pid_speed);
-
-  /* 以下为电机可用时的原控制律，暂不执行：
   PID_SingleCalc(&gimbal.pitch_motor.pid_position, gimbal.pitch.target_pitch_angle, gimbal.pitch.pitch_angle);
   gimbal.pitch.fb_pitch_w = gimbal.pitch_motor.fb_speed;
   gimbal.pitch.target_pitch_w = gimbal.pitch_motor.pid_position.output;
   PID_SingleCalc(&gimbal.pitch_motor.pid_speed, gimbal.pitch.target_pitch_w, gimbal.pitch.fb_pitch_w);
   gimbal.pitch.gravity_comp = 0.2f * gimbal.pitch.gravity_comp + gimbal.pitch.k_gravity_comp * 0.8f * cosf(gimbal.pitch.pitch_angle - gimbal.pitch.gravity_comp_offset);
   gimbal.pitch_motor.give_current = -gimbal.pitch.gravity_comp + gimbal.pitch_motor.pid_speed.output;
-  */
 }
 
 void Gimbal_Update(void)
@@ -181,6 +201,9 @@ void OS_GimbalCallback(void const *argument)
   (void)argument;
 
   osDelay(1200);
+  while (IMU_Attitude_IsReady() == 0U) {
+    osDelay(2);
+  }
   Gimbal_Init();
   for (;;)
   {
@@ -188,6 +211,24 @@ void OS_GimbalCallback(void const *argument)
     if (Error_GetResult() != ERROR_RESULT_NONE) {
       gimbal.yaw_motor.give_current = 0.0f;
       gimbal.pitch_motor.give_current = 0.0f;
+    } else if (gimbal_hold_yaw_pending != 0U) {
+      if (IMU_Attitude_GetUpdateSequence() != gimbal_hold_yaw_imu_sequence) {
+        RC_Ctrl_t remote;
+        float current_yaw = IMU_Attitude_GetYawContinuousRad();
+
+        gimbal.yaw.yaw_angle = current_yaw;
+        gimbal.yaw.target_yaw_angle = current_yaw;
+        gimbal.yaw.target_yaw_w = 0.0f;
+        gimbal.yaw.fb_yaw_w = 0.0f;
+        gimbal.yaw_motor.give_current = 0.0f;
+        PID_Clear(&gimbal.yaw_motor.pid_position);
+        PID_Clear(&gimbal.yaw_motor.pid_speed);
+        Remote_GetSnapshot(&remote);
+        gimbal_last_mouse_sequence = remote.update_sequence;
+        Filter_AverClear(&gimbal_mouse_yaw_filter);
+        Filter_AverClear(&gimbal_mouse_pitch_filter);
+        gimbal_hold_yaw_pending = 0U;
+      }
     } else {
       Gimbal_Update();
     }

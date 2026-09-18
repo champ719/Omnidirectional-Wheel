@@ -25,7 +25,7 @@ static float PowerControl_PredictMotor(uint8_t motor, float current)
 
 void PowerControl_Init(void)
 {
-  PowerControl_SetMotorModel(LF, 0.0092f, 0.0092f, 0.3282f, 1.1880f);
+  PowerControl_SetMotorModel(LF, 0.0092f, 0.1695f, 0.5396f, 0.8622f);
   PowerControl_SetMotorModel(RF, 0.0087f, 0.1043f, 0.5841f, 1.0644f);
   PowerControl_SetMotorModel(LB, 0.0079f, 0.0595f, 0.9790f, 1.1295f);
   PowerControl_SetMotorModel(RB, 0.0095f, 0.0876f, 0.5947f, 1.0428f);

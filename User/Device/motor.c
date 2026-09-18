@@ -13,6 +13,17 @@ void Motor_Init(volatile Motor_t *motor, uint32_t cmd_id, uint8_t motor_type,
 {
   motor->cmd_id = cmd_id;
   motor->motor_type = motor_type;
+  motor->fb_speed = 0.0f;
+  motor->fb_angle = 0.0f;
+  motor->fb_current = 0.0f;
+  motor->fb_temp = 0U;
+  motor->total_angle = 0.0f;
+  motor->last_angle = 0.0f;
+  motor->fb_torque = 0.0f;
+  motor->target_speed = 0.0f;
+  motor->target_angle = 0.0f;
+  motor->target_current = 0.0f;
+  motor->target_temp = 0U;
   motor->give_current = 0.0f;
   motor->feedback_tick = 0U;
   motor->feedback_received = 0U;

@@ -19,6 +19,7 @@
 INS_t INS;
 
 static volatile uint8_t imu_ready;
+static volatile uint32_t imu_update_sequence;
 static float gyro_bias[3];
 static float gyro_body[3];
 static uint32_t calibration_samples;
@@ -94,6 +95,7 @@ void INS_Init(void)
 {
     DWT_Init(SystemCoreClock / 1000000U);
     imu_ready = 0U;
+    imu_update_sequence = 0U;
     calibration_samples = 0U;
 
     while (BMI088_init() != 0U) {
@@ -138,6 +140,7 @@ void INS_Task(void)
     INS.yaw = QEKF_INS.Yaw * DEG_TO_RAD;
     INS.YawTotalAngle = QEKF_INS.YawTotalAngle * DEG_TO_RAD;
     imu_ready = 1U;
+    imu_update_sequence++;
 }
 
 uint8_t IMU_Attitude_IsReady(void)
@@ -161,6 +164,11 @@ float IMU_Attitude_GetYawContinuousRad(void)
     return INS.YawTotalAngle;
 }
 
+uint32_t IMU_Attitude_GetUpdateSequence(void)
+{
+    return imu_update_sequence;
+}
+
 void OS_IMUCallback(void const *argument)
 {
     TickType_t last_wake;
@@ -170,6 +178,11 @@ void OS_IMUCallback(void const *argument)
     last_wake = xTaskGetTickCount();
 
     for (;;) {
+        TickType_t now = xTaskGetTickCount();
+
+        if ((now - last_wake) > pdMS_TO_TICKS(IMU_TASK_PERIOD_MS * 2U)) {
+            last_wake = now;
+        }
         INS_Task();
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(IMU_TASK_PERIOD_MS));
     }

@@ -6,28 +6,23 @@
 #include "gimbal.h"
 #include <math.h>
 
-#define CHASSIS_DEG_TO_RAD    0.01745329252f
-#define CHASSIS_RAD_TO_DEG    57.2957795f
 #define CHASSIS_COS45         0.707106f
 #define CHASSIS_TASK_PERIOD_S 0.002f
+#define CHASSIS_PI            3.14159265f
 
-#define CHASSIS_KEYBOARD_NORMAL_SCALE 0.60f
-#define CHASSIS_KEYBOARD_FAST_SCALE   1.00f //shift加速
-#define CHASSIS_KEYBOARD_SLOW_SCALE   0.30f //ctrl减速
-
-volatile Chassis_t chassis;
+volatile Chassis_t chassis = {0};
 
 /* 上一拍的按键位图，用来抓 Q/E 的下降沿。持续按住只切一次模式。 */
 static uint16_t chassis_last_keys;
 
 void Chassis_Init(void)
 {
+    RC_Ctrl_t remote;
+
     //底盘尺寸信息
     chassis.info.wheelRadius = 0.075f;
     chassis.info.R           = 0.2687f;
-    chassis.info.rpm_ratio   = (chassis.info.wheelRadius > 0.0f)
-                             ? (1.0f / chassis.info.wheelRadius)
-                             : 0.0f;
+    chassis.info.rpm_ratio   = 13.333333f;
     chassis.info.offsetX     = 0.0f;
     chassis.info.offsetY     = 0.0f;
 
@@ -35,12 +30,14 @@ void Chassis_Init(void)
     chassis.info.wheeltrack  = 0.380f;
 
     chassis.move.maxVx       = 3.0f;
-    chassis.move.maxVy       = chassis.move.maxVx;
-    chassis.move.maxVw       = (chassis.info.R > 0.0f)
-                             ? (chassis.move.maxVx * CHASSIS_COS45 / chassis.info.R)
-                             : 0.0f;
+    chassis.move.maxVy       = 3.0f;
+    chassis.move.maxVw       = 7.894745f;
 
-    chassis_last_keys        = 0U;
+    Remote_GetSnapshot(&remote);
+    chassis_last_keys        = remote.key.v;
+
+    chassis.move.maxPower    = CHASSIS_POWER_LIMIT_W;
+    chassis.rotate.ratio     = 1.0f;
 
     Motor_Init(&chassis.motor_3508[LF], 0x200, DJI_3508,
     0.4f, 0.2f, 0.7f, 0.2f, 20.0f, 6.0f,
@@ -55,17 +52,22 @@ void Chassis_Init(void)
     0.8f, 0.1f, 0.6f, 0.0f, 20.0f, 6.0f,
     0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
 
-    PID_Init(&chassis.rotate.pid, 0.15f, 0.0f, 0.5f, 3.0f, 5.0f);
-    //PID_Init(&chassis.move.real_xPID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    //PID_Init(&chassis.move.real_yPID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    PID_Init(&chassis.rotate.pid,
+             8.59436693f,
+             0.0f,
+             57.2957795f,
+             3.0f,
+             5.0f);
+    PID_Init(&chassis.move.real_xPID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    PID_Init(&chassis.move.real_yPID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
     PID_Init(&chassis.move.real_wPID, 5.0f, 0.0f, 0.05f, 0.0f, 0.0f);
 
     Slope_Init(&chassis.move.xSlope,
-               CHASSIS_TRANSLATION_ACCEL_MPS2 * CHASSIS_TASK_PERIOD_S, 0.0f);
+               2.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
     Slope_Init(&chassis.move.ySlope,
-               CHASSIS_TRANSLATION_ACCEL_MPS2 * CHASSIS_TASK_PERIOD_S, 0.0f);
+               2.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
     Slope_Init(&chassis.move.spinSlope,
-               CHASSIS_ROTATION_ACCEL_RADPS2 * CHASSIS_TASK_PERIOD_S, 0.0f);
+               10.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
 
     PowerControl_Init();
     Chassis_ResetControl();
@@ -73,6 +75,11 @@ void Chassis_Init(void)
 
 void Chassis_ResetControl(void)
 {
+    RC_Ctrl_t remote;
+
+    Remote_GetSnapshot(&remote);
+    chassis_last_keys = remote.key.v;
+
     Slope_Reset(&chassis.move.xSlope, 0.0f);
     Slope_Reset(&chassis.move.ySlope, 0.0f);
     Slope_Reset(&chassis.move.spinSlope, 0.0f);
@@ -80,7 +87,15 @@ void Chassis_ResetControl(void)
     chassis.move.vx = 0.0f;
     chassis.move.vy = 0.0f;
     chassis.move.vw = 0.0f;
+    chassis.move.real_vx = 0.0f;
+    chassis.move.real_vy = 0.0f;
+    chassis.move.real_vw = 0.0f;
+    chassis.rotate.mode = ChassisMode_Follow;
+    chassis.rotate.ratio = 1.0f;
     PID_Clear(&chassis.rotate.pid);
+    PID_Clear(&chassis.move.real_xPID);
+    PID_Clear(&chassis.move.real_yPID);
+    PID_Clear(&chassis.move.real_wPID);
 
     for (uint8_t index = 0U; index < 4U; index++) {
       chassis.motor_3508[index].target_speed = 0.0f;
@@ -90,21 +105,15 @@ void Chassis_ResetControl(void)
     PowerControl_Reset();
 }
 
-/* 单 yaw：云台的 yaw 电机就装在底盘上，它的机械角本身就是云台相对底盘的偏角。
-   gimbal.yaw.machine_yaw_angle 已经是相对零位的弧度值，换算成度给旋转矩阵和
-   跟随环用。yaw 掉线时按 0 处理，跟随环停止修正而不是乱转。 */
 static void Chassis_UpdateAngle(void)
 {
     if (Motor_IsOnline(&gimbal.yaw_motor) != 0U) {
-        chassis.rotate.relativeAngle =
-            gimbal.yaw.machine_yaw_angle * CHASSIS_RAD_TO_DEG;
+        chassis.rotate.relativeAngle = gimbal.yaw.machine_yaw_angle;
     } else {
         chassis.rotate.relativeAngle = 0.0f;
     }
 }
 
-/* 把遥控输入统一成 ±1 的 forward(前为正)/right(右为正)。摇杆和键鼠两条路都
-   收敛到这里，Chassis_UpdateMove 就不用再分支。 */
 static void Chassis_ReadCommand(float *forward, float *right)
 {
     RC_Ctrl_t remote;
@@ -125,11 +134,11 @@ static void Chassis_ReadCommand(float *forward, float *right)
         r = (float)((keys & RC_KEY_D) != 0U) - (float)((keys & RC_KEY_A) != 0U);
 
         if ((keys & RC_KEY_CTRL) != 0U) {
-            scale = CHASSIS_KEYBOARD_SLOW_SCALE;
+            scale = 0.30f;
         } else if ((keys & RC_KEY_SHIFT) != 0U) {
-            scale = CHASSIS_KEYBOARD_FAST_SCALE;
+            scale = 1.00f;
         } else {
-            scale = CHASSIS_KEYBOARD_NORMAL_SCALE;
+            scale = 0.60f;
         }
         f *= scale;
         r *= scale;
@@ -219,13 +228,12 @@ static void Chassis_UpdateModeKey(void)
 /*旋转状态机*/
 static void Chassis_HandleFollow(void) //底盘跟随模式
 {
-    Slope_SetTarget(&chassis.move.spinSlope, 0);
     float angle = chassis.rotate.relativeAngle;
-    if(angle >= 180)
-        angle -= 360;
-    if(angle < -180)
-        angle += 360;
-    float deadzone = 0.1f;
+    if(angle >= CHASSIS_PI)
+        angle -= 6.28318531f;
+    if(angle < -CHASSIS_PI)
+        angle += 6.28318531f;
+    float deadzone = 0.00174532925f;
     float pid_angle = 0.0f;
     if (angle > deadzone)
     {
@@ -241,8 +249,10 @@ static void Chassis_HandleFollow(void) //底盘跟随模式
         chassis.rotate.pid.integral = 0.0f;
     }
     PID_SingleCalc(&chassis.rotate.pid, 0, pid_angle);
-    chassis.move.vw = chassis.rotate.pid.output + chassis.move.spinSlope.value;
-    LIMIT(chassis.move.vw,-chassis.move.maxVw,chassis.move.maxVw);
+    LIMIT(chassis.rotate.pid.output,
+          -chassis.move.maxVw,
+          chassis.move.maxVw);
+    Slope_SetTarget(&chassis.move.spinSlope, chassis.rotate.pid.output);
 }
 
 static void Chassis_HandleSpin(void) //小陀螺模式
@@ -260,7 +270,6 @@ static void Chassis_HandleSpin(void) //小陀螺模式
     }
     Slope_SetTarget(&chassis.move.spinSlope,
                     chassis.move.maxVw * chassis.rotate.ratio * Chassis_SpinDirection());
-	chassis.move.vw =chassis.move.spinSlope.value;
 }
 
 /* 把三个命令斜坡各推进一拍。Slope_SetTarget 只写目标，值要靠 NextVal 走。 */
@@ -274,8 +283,8 @@ static void Chassis_UpdateSlope(void)
 /*更新移动数据*/
 void Chassis_UpdateMove(void)
 {
-	float gimbalAngleSin=sinf(chassis.rotate.relativeAngle*CHASSIS_DEG_TO_RAD);
-	float gimbalAngleCos=cosf(chassis.rotate.relativeAngle*CHASSIS_DEG_TO_RAD);
+	float gimbalAngleSin=sinf(chassis.rotate.relativeAngle);
+	float gimbalAngleCos=cosf(chassis.rotate.relativeAngle);
     float maxVx = chassis.move.maxVx;
     float maxVy = chassis.move.maxVy;
     float forward;
@@ -283,7 +292,6 @@ void Chassis_UpdateMove(void)
 
     Chassis_ReadCommand(&forward, &right);
 
-    Chassis_UpdateSlope();
     if((chassis.rotate.mode == ChassisMode_SpinLeft) ||
        (chassis.rotate.mode == ChassisMode_SpinRight))
     {
@@ -295,8 +303,11 @@ void Chassis_UpdateMove(void)
     Slope_SetTarget(&chassis.move.xSlope, forward * maxVx);
     Slope_SetTarget(&chassis.move.ySlope, right * maxVy);
 
+    Chassis_UpdateSlope();
+
 	chassis.move.vx=-(Slope_GetVal(&chassis.move.xSlope) * gimbalAngleCos + Slope_GetVal(&chassis.move.ySlope) * gimbalAngleSin);
 	chassis.move.vy=(-Slope_GetVal(&chassis.move.xSlope) * gimbalAngleSin + Slope_GetVal(&chassis.move.ySlope) * gimbalAngleCos);
+    chassis.move.vw = Slope_GetVal(&chassis.move.spinSlope);
 }
 
 void Task_Chassis_Callback(void)

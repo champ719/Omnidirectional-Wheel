@@ -156,6 +156,7 @@ void OS_ErrorCallback(void const *argument)
                 gimbal.pitch.target_pitch_w = 0.0f;
                 gimbal.yaw_motor.give_current = 0.0f;
                 gimbal.pitch_motor.give_current = 0.0f;
+                Gimbal_HoldCurrentYawAfterEmergencyStop();
 
                 emergency_stop_triggered = 0U;
                 Error_MonitorUpdate();
