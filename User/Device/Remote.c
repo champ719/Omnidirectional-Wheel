@@ -23,6 +23,7 @@ volatile uint8_t Rocker_Ctrl = 1U;
 /* 接收缓冲取 2 帧长度。IDLE 事件在总线空闲时触发，缓冲大于一帧才能稳定
    按“空闲”而不是“收满”结束，避免与下一帧粘连错位。 */
 static uint8_t rc_rx_buf[RC_RX_BUF_LENGTH];
+static volatile uint8_t remote_valid_frame_count;
 
 /* 解析一整帧（18 字节）。拨杆值非法则判为坏帧，返回 0 不写入。 */
 static uint8_t Remote_DecodeFrame(const uint8_t *f)
@@ -30,11 +31,6 @@ static uint8_t Remote_DecodeFrame(const uint8_t *f)
     RC_Ctrl_t decoded;
     uint8_t s1 = (uint8_t)((f[5] >> 4) & 0x03U);
     uint8_t s2 = (uint8_t)((f[5] >> 6) & 0x03U);
-
-    /* DR16 上电初期/干扰会产生 s=0 的坏帧，直接丢弃 */
-    if ((s1 == 0U) || (s2 == 0U)) {
-        return 0U;
-    }
 
     memset(&decoded, 0, sizeof(decoded));
     decoded.rc.ch0 = (int16_t)((f[0] | (f[1] << 8)) & 0x07FF) - RC_CH_VALUE_MID;
@@ -51,22 +47,66 @@ static uint8_t Remote_DecodeFrame(const uint8_t *f)
     decoded.mouse.press_l = f[12];
     decoded.mouse.press_r = f[13];
     decoded.key.v = (uint16_t)(f[14] | (f[15] << 8));
+
+    if ((s1 == 0U) || (s2 == 0U) ||
+        (decoded.rc.ch0 < -700) || (decoded.rc.ch0 > 700) ||
+        (decoded.rc.ch1 < -700) || (decoded.rc.ch1 > 700) ||
+        (decoded.rc.ch2 < -700) || (decoded.rc.ch2 > 700) ||
+        (decoded.rc.ch3 < -700) || (decoded.rc.ch3 > 700) ||
+        (decoded.rc.ch4 < -700) || (decoded.rc.ch4 > 700) ||
+        (decoded.mouse.press_l > 1U) || (decoded.mouse.press_r > 1U)) {
+        remote_valid_frame_count = 0U;
+        return 0U;
+    }
+
     decoded.update_tick = HAL_GetTick();
     decoded.update_sequence = rc_ctrl.update_sequence + 1U;
 
     rc_ctrl = decoded;
+    if (remote_valid_frame_count < 5U) {
+        remote_valid_frame_count++;
+    }
     return 1U;
 }
 
 void Remote_Init(void)
 {
     rc_ctrl = (RC_Ctrl_t){0};
+    remote_valid_frame_count = 0U;
 
     __HAL_UART_CLEAR_IDLEFLAG(&huart3);
     HAL_UARTEx_ReceiveToIdle_DMA(&huart3, rc_rx_buf, RC_RX_BUF_LENGTH);
 
     /* 关掉 DMA 半传输中断，只在整帧空闲/完成时处理 */
     __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
+}
+
+uint8_t Remote_HasFiveValidFrames(void)
+{
+    return (remote_valid_frame_count >= 5U) ? 1U : 0U;
+}
+
+uint8_t Remote_ControlsAreCentered(const RC_Ctrl_t *remote)
+{
+    if (remote == NULL) {
+        return 0U;
+    }
+
+    return ((remote->rc.ch0 >= -30) && (remote->rc.ch0 <= 30) &&
+            (remote->rc.ch1 >= -30) && (remote->rc.ch1 <= 30) &&
+            (remote->rc.ch2 >= -30) && (remote->rc.ch2 <= 30) &&
+            (remote->rc.ch3 >= -30) && (remote->rc.ch3 <= 30)) ? 1U : 0U;
+}
+
+void Remote_ResetValidFrameCount(void)
+{
+    uint32_t interrupt_state = __get_PRIMASK();
+
+    __disable_irq();
+    remote_valid_frame_count = 0U;
+    if (interrupt_state == 0U) {
+        __enable_irq();
+    }
 }
 
 uint8_t Remote_IsOnline(void)
@@ -120,6 +160,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
         return;
     }
 
+    remote_valid_frame_count = 0U;
     __HAL_UART_CLEAR_PEFLAG(huart);
     __HAL_UART_CLEAR_FEFLAG(huart);
     __HAL_UART_CLEAR_NEFLAG(huart);
@@ -140,11 +181,15 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         return;
     }
 
-    /* 从收到的数据里，取最后一个完整的 18 字节帧解析。
-       正常每次空闲收到 1 帧 = 18 字节；若粘连收到多帧，取最新那帧。 */
-    if (Size >= RC_FRAME_LENGTH) {
-        uint16_t offset = Size - (Size % RC_FRAME_LENGTH) - RC_FRAME_LENGTH;
-        (void)Remote_DecodeFrame(&rc_rx_buf[offset]);
+    if ((Size > 0U) && (Size <= RC_RX_BUF_LENGTH) &&
+        ((Size % RC_FRAME_LENGTH) == 0U)) {
+        uint16_t offset;
+
+        for (offset = 0U; offset < Size; offset += RC_FRAME_LENGTH) {
+            (void)Remote_DecodeFrame(&rc_rx_buf[offset]);
+        }
+    } else {
+        remote_valid_frame_count = 0U;
     }
 
     /* 重新武装接收，等待下一帧 */

@@ -12,8 +12,17 @@
 
 static volatile Error_Result_t error_result = ERROR_RESULT_REMOTE_OFFLINE;
 static volatile uint8_t emergency_stop_triggered;
+static volatile uint8_t controls_enabled;
+static uint32_t arming_imu_sequence;
 
 extern osThreadId ErrorTaskHandle;
+
+static void Error_PrepareArming(void)
+{
+    controls_enabled = 0U;
+    arming_imu_sequence = IMU_Attitude_GetUpdateSequence();
+    Remote_ResetValidFrameCount();
+}
 
 /**
  * @brief 初始化故障监控状态。
@@ -23,6 +32,7 @@ void Error_Init(void)
 {
     error_result = ERROR_RESULT_REMOTE_OFFLINE;
     emergency_stop_triggered = 0U;
+    Error_PrepareArming();
 }
 
 /**
@@ -49,14 +59,49 @@ void Error_MonitorUpdate(void)
         remote.rc.s1,
         IMU_Attitude_IsReady());
 
-    if (result == ERROR_RESULT_NONE) {
-        if (CAN_IsHealthy() == 0U) {
-            result = ERROR_RESULT_CAN_FAULT;
-        } else if (Motor_FeedbackHealthy() == 0U) {
-            result = ERROR_RESULT_MOTOR_FEEDBACK_TIMEOUT;
-        }
+    if (result != ERROR_RESULT_NONE) {
+        Error_PrepareArming();
+        error_result = result;
+        return;
     }
-    error_result = result;
+
+    if ((Chassis_IsInitialized() == 0U) ||
+        (Gimbal_IsInitialized() == 0U)) {
+        Error_PrepareArming();
+        error_result = ERROR_RESULT_ARMING;
+        return;
+    }
+
+    if (CAN_IsHealthy() == 0U) {
+        Error_PrepareArming();
+        error_result = ERROR_RESULT_CAN_FAULT;
+        return;
+    }
+
+    if (Motor_FeedbackHealthy() == 0U) {
+        Error_PrepareArming();
+        error_result = ERROR_RESULT_MOTOR_FEEDBACK_TIMEOUT;
+        return;
+    }
+
+    if (controls_enabled == 0U) {
+        if ((remote.rc.s2 != RC_SW_MID) ||
+            (Remote_ControlsAreCentered(&remote) == 0U)) {
+            Error_PrepareArming();
+            error_result = ERROR_RESULT_ARMING;
+            return;
+        }
+
+        if ((Remote_HasFiveValidFrames() == 0U) ||
+            (IMU_Attitude_GetUpdateSequence() == arming_imu_sequence)) {
+            error_result = ERROR_RESULT_ARMING;
+            return;
+        }
+
+        controls_enabled = 1U;
+    }
+
+    error_result = ERROR_RESULT_NONE;
 }
 
 /**
@@ -69,6 +114,7 @@ void Error_TriggerEmergencyStop(void)
         return;
     }
 
+    Error_PrepareArming();
     emergency_stop_triggered = 1U;
     if (ErrorTaskHandle != NULL) {
         (void)osThreadResume(ErrorTaskHandle);
@@ -125,6 +171,7 @@ void OS_ErrorCallback(void const *argument)
         (void)osThreadSuspend(ErrorTaskHandle);
 
         error_result = ERROR_RESULT_EMERGENCY_STOP;
+        Error_PrepareArming();
         Chassis_ResetControl();
         gimbal.yaw_motor.give_current = 0.0f;
         gimbal.pitch_motor.give_current = 0.0f;
@@ -158,6 +205,7 @@ void OS_ErrorCallback(void const *argument)
                 gimbal.pitch_motor.give_current = 0.0f;
                 Gimbal_HoldCurrentYawAfterEmergencyStop();
 
+                Error_PrepareArming();
                 emergency_stop_triggered = 0U;
                 Error_MonitorUpdate();
 

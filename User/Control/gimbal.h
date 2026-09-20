@@ -44,6 +44,7 @@ typedef struct
 extern volatile Gimbal_t gimbal;
 
 void Gimbal_Init(void);
+uint8_t Gimbal_IsInitialized(void);
 void Gimbal_Update(void);
 void Gimbal_HoldCurrentYawAfterEmergencyStop(void);
 

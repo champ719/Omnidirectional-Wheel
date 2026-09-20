@@ -11,7 +11,7 @@
 
 #define GIMBAL_JOYSTICK_YAW_SPEED_RADPS    6.0f   //云台yaw目标角速度
 #define GIMBAL_JOYSTICK_PITCH_SPEED_RADPS  0.0f   //云台pitch目标角速度
-#define GIMBAL_MOUSE_YAW_RAD_PER_COUNT     0.0015f
+#define GIMBAL_MOUSE_YAW_RAD_PER_COUNT     0.0030f//灵敏度
 #define GIMBAL_MOUSE_PITCH_RAD_PER_COUNT   0.0010f
 #define GIMBAL_MOUSE_MAX_DELTA_RAD         0.25f
 #define GIMBAL_MOUSE_FILTER_SIZE           5U     //鼠标增量滑动平均窗口，按帧计数
@@ -29,6 +29,7 @@ static AverFilter gimbal_mouse_yaw_filter;
 static AverFilter gimbal_mouse_pitch_filter;
 static volatile uint8_t gimbal_hold_yaw_pending;
 static volatile uint32_t gimbal_hold_yaw_imu_sequence;
+static volatile uint8_t gimbal_initialized;
 
 static float wrap_pi(float a)
 {
@@ -48,6 +49,8 @@ void Gimbal_Init(void)
 {
   RC_Ctrl_t remote;
   float current_yaw;
+
+  gimbal_initialized = 0U;
 
   Motor_Init(&gimbal.yaw_motor, 0x1FF, DJI_6020,
     0.5f, 0.0f, 0.0f, 0.18f, 1.6f, 0.8f,
@@ -82,6 +85,12 @@ void Gimbal_Init(void)
   gimbal_last_mouse_sequence = remote.update_sequence;
   Filter_InitAverFilter(&gimbal_mouse_yaw_filter, GIMBAL_MOUSE_FILTER_SIZE);
   Filter_InitAverFilter(&gimbal_mouse_pitch_filter, GIMBAL_MOUSE_FILTER_SIZE);
+  gimbal_initialized = 1U;
+}
+
+uint8_t Gimbal_IsInitialized(void)
+{
+  return gimbal_initialized;
 }
 
 void Gimbal_HoldCurrentYawAfterEmergencyStop(void)
@@ -123,7 +132,7 @@ static void Gimbal_ReadCommand(float *yaw_delta, float *pitch_delta)
      滤波器对增量的直流增益为 1，积分下来总角度不会被拉偏。 */
   *yaw_delta = limit_range(
       Filter_AverCalc(&gimbal_mouse_yaw_filter,
-                      (float)remote.mouse.x * GIMBAL_MOUSE_YAW_RAD_PER_COUNT),
+                      -(float)remote.mouse.x * GIMBAL_MOUSE_YAW_RAD_PER_COUNT),
       -GIMBAL_MOUSE_MAX_DELTA_RAD,
       GIMBAL_MOUSE_MAX_DELTA_RAD);
   *pitch_delta = limit_range(

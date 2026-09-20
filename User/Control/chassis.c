@@ -9,15 +9,23 @@
 #define CHASSIS_COS45         0.707106f
 #define CHASSIS_TASK_PERIOD_S 0.002f
 #define CHASSIS_PI            3.14159265f
+#define CHASSIS_KEYBOARD_MOVE_RATIO       0.60f
+#define CHASSIS_SPIN_MOVE_RATIO           0.40f
+#define CHASSIS_SPIN_RATIO_CTRL           0.30f
+#define CHASSIS_SPIN_RATIO_DEFAULT        0.60f
+#define CHASSIS_SPIN_RATIO_SHIFT          1.00f
 
 volatile Chassis_t chassis = {0};
 
 /* 上一拍的按键位图，用来抓 Q/E 的下降沿。持续按住只切一次模式。 */
 static uint16_t chassis_last_keys;
+static volatile uint8_t chassis_initialized;
 
 void Chassis_Init(void)
 {
     RC_Ctrl_t remote;
+
+    chassis_initialized = 0U;
 
     //底盘尺寸信息
     chassis.info.wheelRadius = 0.075f;
@@ -52,15 +60,10 @@ void Chassis_Init(void)
     0.8f, 0.1f, 0.6f, 0.0f, 20.0f, 6.0f,
     0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
 
-    PID_Init(&chassis.rotate.pid,
-             8.59436693f,
-             0.0f,
-             57.2957795f,
-             3.0f,
-             5.0f);
+    PID_Init(&chassis.rotate.pid,     4.0f, 0.0f, 2.0f, 3.0f, 5.0f);
     PID_Init(&chassis.move.real_xPID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
     PID_Init(&chassis.move.real_yPID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-    PID_Init(&chassis.move.real_wPID, 5.0f, 0.0f, 0.05f, 0.0f, 0.0f);
+    PID_Init(&chassis.move.real_wPID, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
     Slope_Init(&chassis.move.xSlope,
                2.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
@@ -71,6 +74,12 @@ void Chassis_Init(void)
 
     PowerControl_Init();
     Chassis_ResetControl();
+    chassis_initialized = 1U;
+}
+
+uint8_t Chassis_IsInitialized(void)
+{
+    return chassis_initialized;
 }
 
 void Chassis_ResetControl(void)
@@ -128,20 +137,11 @@ static void Chassis_ReadCommand(float *forward, float *right)
         r = Remote_NormalizeChannel(remote.rc.ch3);
     } else {
         uint16_t keys = remote.key.v;
-        float scale;
 
-        f = (float)((keys & RC_KEY_W) != 0U) - (float)((keys & RC_KEY_S) != 0U);
-        r = (float)((keys & RC_KEY_D) != 0U) - (float)((keys & RC_KEY_A) != 0U);
-
-        if ((keys & RC_KEY_CTRL) != 0U) {
-            scale = 0.30f;
-        } else if ((keys & RC_KEY_SHIFT) != 0U) {
-            scale = 1.00f;
-        } else {
-            scale = 0.60f;
-        }
-        f *= scale;
-        r *= scale;
+        f = (float)((keys & RC_KEY_A) != 0U) - (float)((keys & RC_KEY_D) != 0U);
+        r = (float)((keys & RC_KEY_W) != 0U) - (float)((keys & RC_KEY_S) != 0U);
+        f *= CHASSIS_KEYBOARD_MOVE_RATIO;
+        r *= CHASSIS_KEYBOARD_MOVE_RATIO;
     }
 
     /* 斜向合成时限制幅值，避免 45° 方向速度超出上限 */
@@ -257,7 +257,19 @@ static void Chassis_HandleFollow(void) //底盘跟随模式
 
 static void Chassis_HandleSpin(void) //小陀螺模式
 {
-    if(chassis.pattern == Chassis_control)
+    if (Rocker_Ctrl == 0U)
+    {
+        RC_Ctrl_t remote;
+
+        Remote_GetSnapshot(&remote);
+        if ((remote.key.v & RC_KEY_CTRL) != 0U)
+            chassis.rotate.ratio = CHASSIS_SPIN_RATIO_CTRL;
+        else if ((remote.key.v & RC_KEY_SHIFT) != 0U)
+            chassis.rotate.ratio = CHASSIS_SPIN_RATIO_SHIFT;
+        else
+            chassis.rotate.ratio = CHASSIS_SPIN_RATIO_DEFAULT;
+    }
+    else if(chassis.pattern == Chassis_control)
     {
         if(ABS(Slope_GetVal(&chassis.move.xSlope)) / chassis.move.maxVx + ABS(Slope_GetVal(&chassis.move.ySlope)) / chassis.move.maxVy > 0.05f)
             chassis.rotate.ratio = 0.4f;
@@ -295,9 +307,14 @@ void Chassis_UpdateMove(void)
     if((chassis.rotate.mode == ChassisMode_SpinLeft) ||
        (chassis.rotate.mode == ChassisMode_SpinRight))
     {
-        /* 只收窄本拍的可用上限。就地改 maxVx/maxVy 会每周期连乘，几百拍后衰减到 0 */
-        maxVx *= chassis.rotate.ratio;
-        maxVy *= chassis.rotate.ratio;
+        /* 键鼠修饰键只调整小陀螺转速，平移始终使用固定降速比例。 */
+        if (Rocker_Ctrl == 0U) {
+            maxVx *= CHASSIS_SPIN_MOVE_RATIO;
+            maxVy *= CHASSIS_SPIN_MOVE_RATIO;
+        } else {
+            maxVx *= chassis.rotate.ratio;
+            maxVy *= chassis.rotate.ratio;
+        }
     }
 
     Slope_SetTarget(&chassis.move.xSlope, forward * maxVx);

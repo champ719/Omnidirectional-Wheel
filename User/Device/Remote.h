@@ -61,6 +61,9 @@ extern volatile uint8_t Rocker_Ctrl;
 
 void Remote_Init(void);
 uint8_t Remote_IsOnline(void);
+uint8_t Remote_HasFiveValidFrames(void);
+uint8_t Remote_ControlsAreCentered(const RC_Ctrl_t *remote);
+void Remote_ResetValidFrameCount(void);
 float Remote_NormalizeChannel(int16_t value);
 void Remote_GetSnapshot(RC_Ctrl_t *snapshot);
 

@@ -96,6 +96,7 @@ typedef struct _Chassis
 extern volatile Chassis_t chassis;
 
 void Chassis_Init(void);
+uint8_t Chassis_IsInitialized(void);
 void Chassis_ResetControl(void);
 void Chassis_UpdateMove(void);
 void Task_Chassis_Callback(void);

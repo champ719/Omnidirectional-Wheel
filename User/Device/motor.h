@@ -15,9 +15,6 @@
 
 typedef struct Motor_t
 {
-  /* 速度类字段统一用「输出轴 rad/s」：3508 在 FeedbackTrans 里已除以 GEAR_RATE，
-     6020 无减速箱、本来就是输出轴。target_speed 必须与此同量纲，
-     否则速度环恒饱和（差 GEAR_RATE*60/(2π) ≈ 183 倍）。 */
   float fb_speed;      // 反馈转速 rad/s
   float fb_angle;      // 机械角 rad，-π..π
   float fb_current;    // 反馈电流 A
