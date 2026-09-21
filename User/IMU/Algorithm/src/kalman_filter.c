@@ -179,8 +179,15 @@ void Kalman_Filter_Init(KalmanFilter_t *kf, uint8_t xhatSize, uint8_t uSize, uin
     memset(kf->FilteredValue, 0, sizeof_float * xhatSize);
     kf->MeasuredVector = (float *)user_malloc(sizeof_float * zSize);
     memset(kf->MeasuredVector, 0, sizeof_float * zSize);
-    kf->ControlVector = (float *)user_malloc(sizeof_float * uSize);
-    memset(kf->ControlVector, 0, sizeof_float * uSize);
+    /* A zero-byte pvPortMalloc() returns NULL and, when the FreeRTOS malloc
+     * failure hook is enabled, is reported as an allocation failure.  The IMU
+     * EKF intentionally has uSize == 0, so do not allocate a control vector. */
+    kf->ControlVector = NULL;
+    if (uSize != 0U)
+    {
+        kf->ControlVector = (float *)user_malloc(sizeof_float * uSize);
+        memset(kf->ControlVector, 0, sizeof_float * uSize);
+    }
 
     // xhat x(k|k)
     kf->xhat_data = (float *)user_malloc(sizeof_float * xhatSize);
@@ -545,4 +552,3 @@ static void H_K_R_Adjustment(KalmanFilter_t *kf)
     kf->K.numCols = kf->MeasurementValidNum;
     kf->z.numRows = kf->MeasurementValidNum;
 }
-

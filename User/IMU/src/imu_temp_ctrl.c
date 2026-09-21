@@ -97,7 +97,6 @@ void INS_Init(void)
     imu_ready = 0U;
     imu_update_sequence = 0U;
     calibration_samples = 0U;
-
     while (BMI088_init() != 0U) {
         vTaskDelay(pdMS_TO_TICKS(10U));
     }
@@ -112,8 +111,8 @@ void INS_Init(void)
 
 void INS_Task(void)
 {
-    float gyro_sensor[3];
-    float accel_sensor[3];
+    float gyro_sensor[3] = {0.0f, 0.0f, 0.0f};
+    float accel_sensor[3] = {0.0f, 0.0f, 0.0f};
 
     BMI088_read(gyro_sensor, accel_sensor, &INS.temp);
 

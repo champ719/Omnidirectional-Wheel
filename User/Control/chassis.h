@@ -8,6 +8,7 @@
 #define RF  1U
 #define LB  2U
 #define RB  3U
+
 typedef enum
 {
 	ChassisMode_Follow = 0,	// 底盘跟随云台模式
@@ -83,9 +84,12 @@ typedef struct _Chassis
 	/* 功率计/超级电容反馈（CAN 0x213），写入见 USER_CAN.c */
 	struct
 	{
-		float voltage;	// 母线电压 V
-		float current;	// 母线电流 A
-		float power;	// 一阶滤波后的功率 W
+		volatile float voltage;	// 四轮功率计母线电压 V
+		volatile float current;	// 四轮功率计总电流 A
+		volatile float power;	// 四轮总功率滤波值 W
+		volatile uint32_t update_tick;
+		volatile uint32_t update_sequence;
+		volatile uint8_t received;
 	} power_fb;
 
 	// 功率预测模型参数与状态，见 Power_Control.c
@@ -93,7 +97,7 @@ typedef struct _Chassis
 } Chassis_t;
 
 
-extern volatile Chassis_t chassis;
+extern Chassis_t chassis;
 
 void Chassis_Init(void);
 uint8_t Chassis_IsInitialized(void);

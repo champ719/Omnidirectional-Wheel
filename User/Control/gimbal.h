@@ -4,11 +4,6 @@
 #include "motor.h"
 
 
-#define PITCH_MAX_ANGLE 0.5345f
-#define PITCH_MIN_ANGLE -0.3627f
-#define YAW_ANGLE_RATE 0.030f
-#define PITCH_ANGLE_RATE 0.020f
-
 typedef struct
 {
   Motor_t yaw_motor;
@@ -41,7 +36,7 @@ typedef struct
 
 } Gimbal_t;
 
-extern volatile Gimbal_t gimbal;
+extern Gimbal_t gimbal;
 
 void Gimbal_Init(void);
 uint8_t Gimbal_IsInitialized(void);

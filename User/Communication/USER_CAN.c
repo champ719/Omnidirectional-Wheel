@@ -109,6 +109,10 @@ static void CAN_RouteMessage(CAN_HandleTypeDef *hcan,
             chassis.power_fb.power =
                 0.8f * chassis.power_fb.voltage * chassis.power_fb.current +
                 0.2f * chassis.power_fb.power;
+            chassis.power_fb.update_tick = HAL_GetTick();
+            chassis.power_fb.received = 1U;
+            /* 序号最后更新，任务看到新序号时本帧数据已完整。 */
+            chassis.power_fb.update_sequence++;
             break;
         default:
             break;

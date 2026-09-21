@@ -31,7 +31,7 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -50,7 +50,7 @@ I (..\Core\Inc\tim.h)(0x6A589EB3)
 I (..\Core\Inc\usart.h)(0x6A534E48)
 I (..\Core\Inc\gpio.h)(0x6A534E47)
 I (..\User\Device\Buzzer.h)(0x6A57A1F6)
-I (..\User\Application\Error.h)(0x6AAD3CB0)
+I (..\User\Application\Error.h)(0x6AB13337)
 I (..\User\Device\Remote.h)(0x6AAD3C72)
 I (..\User\Communication\USER_CAN.h)(0x6AA654C5)
 I (..\User\Device\motor.h)(0x6AAFAAB2)
@@ -84,9 +84,9 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_spi.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
-F (../Core/Src/freertos.c)(0x6AABD04A)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/freertos.o" -MMD)
+F (../Core/Src/freertos.c)(0x6AB13AF3)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/freertos.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -127,7 +127,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h)(0x69AFC1C5)
 I (..\User\IMU\BMI088\inc\BMI088driver.h)(0x6A58AEE6)
-I (..\User\IMU\inc\imu_temp_ctrl.h)(0x6AAD1FA8)
+I (..\User\IMU\inc\imu_temp_ctrl.h)(0x6AB13A4E)
 I (..\User\Device\Buzzer.h)(0x6A57A1F6)
 F (../Core/Src/can.c)(0x6AABB9B1)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/can.o" -MMD)
 I (..\Core\Inc\can.h)(0x6A534E48)
@@ -928,11 +928,11 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_spi.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
-F (..\User\Application\Error.c)(0x6AAD3CB2)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/error.o" -MMD)
-I (..\User\Application\Error.h)(0x6AAD3CB0)
+F (..\User\Application\Error.c)(0x6AB13339)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/error.o" -MMD)
+I (..\User\Application\Error.h)(0x6AB13337)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -972,19 +972,19 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_spi.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
-I (..\User\Control\chassis.h)(0x6AAD3C8A)
+I (..\User\Control\chassis.h)(0x6AB13A60)
 I (..\User\Device\motor.h)(0x6AAFAAB2)
 I (..\User\math\PID.h)(0x6AAD10F8)
 I (..\User\math\Slope.h)(0x6AA90B8D)
-I (..\User\Application\Power_Control.h)(0x6AA93EBA)
-I (..\User\Control\gimbal.h)(0x6AAD3C8E)
+I (..\User\Application\Power_Control.h)(0x6AB13DA8)
+I (..\User\Control\gimbal.h)(0x6AB136F9)
 I (..\User\Communication\USER_CAN.h)(0x6AA654C5)
 I (..\Core\Inc\can.h)(0x6A534E48)
-I (..\User\IMU\inc\imu_temp_ctrl.h)(0x6AAD1FA8)
+I (..\User\IMU\inc\imu_temp_ctrl.h)(0x6AB13A4E)
 I (..\User\Device\Remote.h)(0x6AAD3C72)
-F (..\User\Application\Power_Control.c)(0x6AACF9EB)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/power_control.o" -MMD)
-I (..\User\Application\Power_Control.h)(0x6AA93EBA)
-I (..\User\Control\chassis.h)(0x6AAD3C8A)
+F (..\User\Application\Power_Control.c)(0x6AB13DAA)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/power_control.o" -MMD)
+I (..\User\Application\Power_Control.h)(0x6AB13DA8)
+I (..\User\Control\chassis.h)(0x6AB13A60)
 I (..\User\Device\motor.h)(0x6AAFAAB2)
 I (..\Core\Inc\main.h)(0x6A58A27D)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h)(0x69AFC227)
@@ -1014,7 +1014,7 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1022,8 +1022,8 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h)(0x69AFC1C5)
 I (..\User\math\PID.h)(0x6AAD10F8)
 I (..\User\math\Slope.h)(0x6AA90B8D)
-F (..\User\Control\chassis.c)(0x6AAFCD21)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/chassis.o" -MMD)
-I (..\User\Control\chassis.h)(0x6AAD3C8A)
+F (..\User\Control\chassis.c)(0x6AB13FBB)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/chassis.o" -MMD)
+I (..\User\Control\chassis.h)(0x6AB13A60)
 I (..\User\Device\motor.h)(0x6AAFAAB2)
 I (..\Core\Inc\main.h)(0x6A58A27D)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h)(0x69AFC227)
@@ -1053,7 +1053,7 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1061,8 +1061,8 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h)(0x69AFC1C5)
 I (..\User\math\PID.h)(0x6AAD10F8)
 I (..\User\math\Slope.h)(0x6AA90B8D)
-I (..\User\Application\Power_Control.h)(0x6AA93EBA)
-I (..\User\Application\Error.h)(0x6AAD3CB0)
+I (..\User\Application\Power_Control.h)(0x6AB13DA8)
+I (..\User\Application\Error.h)(0x6AB13337)
 I (..\User\Device\Remote.h)(0x6AAD3C72)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h)(0x69AFC1C5)
@@ -1071,9 +1071,9 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h)(0x69AFC1C5)
-I (..\User\Control\gimbal.h)(0x6AAD3C8E)
-F (..\User\Control\gimbal.c)(0x6AAFCCCC)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/gimbal.o" -MMD)
-I (..\User\Control\gimbal.h)(0x6AAD3C8E)
+I (..\User\Control\gimbal.h)(0x6AB136F9)
+F (..\User\Control\gimbal.c)(0x6AB13CDA)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/gimbal.o" -MMD)
+I (..\User\Control\gimbal.h)(0x6AB136F9)
 I (..\Core\Inc\main.h)(0x6A58A27D)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h)(0x69AFC227)
 I (..\Core\Inc\stm32f4xx_hal_conf.h)(0x6A56184D)
@@ -1103,19 +1103,19 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
 I (..\User\Device\motor.h)(0x6AAFAAB2)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h)(0x6A58A1A1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h)(0x69AFC1C5)
 I (..\User\math\PID.h)(0x6AAD10F8)
-I (..\User\Application\Error.h)(0x6AAD3CB0)
+I (..\User\Application\Error.h)(0x6AB13337)
 I (..\User\math\Filter.h)(0x6A58AEED)
 I (..\User\Device\Remote.h)(0x6AAD3C72)
-I (..\User\Control\chassis.h)(0x6AAD3C8A)
+I (..\User\Control\chassis.h)(0x6AB13A60)
 I (..\User\math\Slope.h)(0x6AA90B8D)
-I (..\User\Application\Power_Control.h)(0x6AA93EBA)
+I (..\User\Application\Power_Control.h)(0x6AB13DA8)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h)(0x69AFC1C5)
@@ -1123,8 +1123,8 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h)(0x69AFC1C5)
-I (..\User\IMU\inc\imu_temp_ctrl.h)(0x6AAD1FA8)
-F (..\User\Communication\USER_CAN.c)(0x6AA93912)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/user_can.o" -MMD)
+I (..\User\IMU\inc\imu_temp_ctrl.h)(0x6AB13A4E)
+F (..\User\Communication\USER_CAN.c)(0x6AB13A62)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/user_can.o" -MMD)
 I (..\User\Communication\USER_CAN.h)(0x6AA654C5)
 I (..\Core\Inc\main.h)(0x6A58A27D)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h)(0x69AFC227)
@@ -1156,17 +1156,17 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
 I (..\Core\Inc\can.h)(0x6A534E48)
 I (..\User\Device\motor.h)(0x6AAFAAB2)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h)(0x6A58A1A1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h)(0x69AFC1C5)
 I (..\User\math\PID.h)(0x6AAD10F8)
-I (..\User\Control\chassis.h)(0x6AAD3C8A)
+I (..\User\Control\chassis.h)(0x6AB13A60)
 I (..\User\math\Slope.h)(0x6AA90B8D)
-I (..\User\Application\Power_Control.h)(0x6AA93EBA)
-I (..\User\Control\gimbal.h)(0x6AAD3C8E)
+I (..\User\Application\Power_Control.h)(0x6AB13DA8)
+I (..\User\Control\gimbal.h)(0x6AB136F9)
 F (..\User\Device\Buzzer.c)(0x6A58FEEC)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/buzzer.o" -MMD)
 I (..\User\Device\Buzzer.h)(0x6A57A1F6)
 I (..\Core\Inc\main.h)(0x6A58A27D)
@@ -1197,7 +1197,7 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1236,19 +1236,19 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F\portmacro.h)(0x6A58A1A1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h)(0x69AFC1C5)
 I (..\User\math\PID.h)(0x6AAD10F8)
-I (..\User\Application\Error.h)(0x6AAD3CB0)
+I (..\User\Application\Error.h)(0x6AB13337)
 I (..\User\Communication\USER_CAN.h)(0x6AA654C5)
 I (..\Core\Inc\can.h)(0x6A534E48)
-I (..\User\Control\chassis.h)(0x6AAD3C8A)
+I (..\User\Control\chassis.h)(0x6AB13A60)
 I (..\User\math\Slope.h)(0x6AA90B8D)
-I (..\User\Application\Power_Control.h)(0x6AA93EBA)
+I (..\User\Application\Power_Control.h)(0x6AB13DA8)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h)(0x69AFC1C5)
@@ -1256,7 +1256,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\semphr.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h)(0x69AFC1C5)
-I (..\User\Control\gimbal.h)(0x6AAD3C8E)
+I (..\User\Control\gimbal.h)(0x6AB136F9)
 F (..\User\Device\Remote.c)(0x6AAD3C6F)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/remote.o" -MMD)
 I (..\User\Device\Remote.h)(0x6AAD3C72)
 I (..\Core\Inc\main.h)(0x6A58A27D)
@@ -1286,9 +1286,9 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_spi.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
-I (..\User\Application\Error.h)(0x6AAD3CB0)
+I (..\User\Application\Error.h)(0x6AB13337)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1396,7 +1396,7 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
 I (..\Core\Inc\spi.h)(0x6A56184B)
-F (..\User\IMU\Algorithm\src\kalman_filter.c)(0x6A58AEE6)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/kalman_filter.o" -MMD)
+F (..\User\IMU\Algorithm\src\kalman_filter.c)(0x6AB137C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/kalman_filter.o" -MMD)
 I (..\User\IMU\Algorithm\inc\kalman_filter.h)(0x6A58AEE5)
 I (..\Drivers\CMSIS\DSP\Include\dsp\matrix_functions.h)(0x69AFC228)
 I (..\Drivers\CMSIS\DSP\Include\arm_math_types.h)(0x69AFC228)
@@ -1408,7 +1408,7 @@ I (..\Drivers\CMSIS\DSP\Include\dsp\utils.h)(0x69AFC228)
 I (..\Drivers\CMSIS\DSP\Include\dsp\fast_math_functions.h)(0x69AFC228)
 I (..\Drivers\CMSIS\DSP\Include\dsp\basic_math_functions.h)(0x69AFC228)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1441,8 +1441,8 @@ I (..\Drivers\CMSIS\DSP\Include\dsp\svm_defines.h)(0x69AFC228)
 I (..\Drivers\CMSIS\DSP\Include\dsp\transform_functions.h)(0x69AFC228)
 I (..\Drivers\CMSIS\DSP\Include\dsp\filtering_functions.h)(0x69AFC228)
 I (..\Drivers\CMSIS\DSP\Include\dsp\quaternion_math_functions.h)(0x69AFC228)
-F (..\User\IMU\src\imu_temp_ctrl.c)(0x6AAD1FAB)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/imu_temp_ctrl.o" -MMD)
-I (..\User\IMU\inc\imu_temp_ctrl.h)(0x6AAD1FA8)
+F (..\User\IMU\src\imu_temp_ctrl.c)(0x6AB13A4F)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/imu_temp_ctrl.o" -MMD)
+I (..\User\IMU\inc\imu_temp_ctrl.h)(0x6AB13A4E)
 I (..\User\IMU\BMI088\inc\BMI088driver.h)(0x6A58AEE6)
 I (..\Core\Inc\main.h)(0x6A58A27D)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal.h)(0x69AFC227)
@@ -1472,7 +1472,7 @@ I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_tim_ex.h)(0x69AFC227)
 I (..\Drivers\STM32F4xx_HAL_Driver\Inc\stm32f4xx_hal_uart.h)(0x69AFC227)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1493,7 +1493,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h)(0x69AFC1C5)
 F (../Middlewares/Third_Party/FreeRTOS/Source/croutine.c)(0x69AFC1C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/croutine.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1504,7 +1504,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\croutine.h)(0x69AFC1C5)
 F (../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c)(0x69AFC1C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/event_groups.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1516,7 +1516,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h)(0x69AFC1C5)
 F (../Middlewares/Third_Party/FreeRTOS/Source/list.c)(0x69AFC1C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/list.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1525,7 +1525,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\mpu_wrappers.h)(0x69AFC1C5
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h)(0x69AFC1C5)
 F (../Middlewares/Third_Party/FreeRTOS/Source/queue.c)(0x69AFC1C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/queue.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1536,7 +1536,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\queue.h)(0x69AFC1C5)
 F (../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c)(0x69AFC1C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/stream_buffer.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1547,7 +1547,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\stream_buffer.h)(0x69AFC1C5)
 F (../Middlewares/Third_Party/FreeRTOS/Source/tasks.c)(0x69AFC1C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/tasks.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1559,7 +1559,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\stack_macros.h)(0x69AFC1C5)
 F (../Middlewares/Third_Party/FreeRTOS/Source/timers.c)(0x69AFC1C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/timers.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1572,7 +1572,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\timers.h)(0x69AFC1C5)
 F (../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c)(0x69AFC1C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/cmsis_os.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS\cmsis_os.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1587,7 +1587,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\event_groups.h)(0x69AFC1C5
 I (..\Drivers\CMSIS\Include\cmsis_gcc.h)(0x69AFC228)
 F (../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c)(0x69AFC1C5)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/heap_4.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)
@@ -1597,7 +1597,7 @@ I (..\Middlewares\Third_Party\FreeRTOS\Source\include\task.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\list.h)(0x69AFC1C5)
 F (../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c)(0x6A58A19F)(-xc -std=c99 --target=arm-arm-none-eabi -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard -c-fno-rtti -funsigned-char -fshort-enums -fshort-wchar-gdwarf-4 -O3 -ffunction-sections -Wno-packed -Wno-missing-variable-declarations -Wno-missing-prototypes -Wno-missing-noreturn -Wno-sign-conversion -Wno-nonportable-include-path -Wno-reserved-id-macro -Wno-unused-macros -Wno-documentation-unknown-command -Wno-documentation -Wno-license-management -Wno-parentheses-equality -Wno-reserved-identifier -Wno-covered-switch-default -Wno-unreachable-code-break -I ../Core/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include -I ../Drivers/CMSIS/DSP/Include -I ../Drivers/CMSIS/DSP/PrivateInclude -I ../User/Application -I ../User/Control -I ../User/Communication -I ../User/Device -I ../User/math -I ../User/BSP/inc -I ../User/IMU/inc -I ../User/IMU/BMI088/inc -I ../User/IMU/Algorithm/inc -I ../Middlewares/Third_Party/FreeRTOS/Source/include -I ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS -I ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F-I./RTE/_Omnidirectional_Wheel-IC:/Users/CHAMP/AppData/Local/Arm/Packs/ARM/CMSIS/6.3.0/CMSIS/Core/Include-D__UVISION_VERSION="543" -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx -DARM_MATH_CM4-o "omnidirectional wheel/port.o" -MMD)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\FreeRTOS.h)(0x69AFC1C5)
-I (..\Core\Inc\FreeRTOSConfig.h)(0x6AABE11F)
+I (..\Core\Inc\FreeRTOSConfig.h)(0x6AB13AF1)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\projdefs.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\portable.h)(0x69AFC1C5)
 I (..\Middlewares\Third_Party\FreeRTOS\Source\include\deprecated_definitions.h)(0x69AFC1C5)

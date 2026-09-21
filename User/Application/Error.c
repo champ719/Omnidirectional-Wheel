@@ -11,17 +11,65 @@
 #include "Remote.h"
 
 static volatile Error_Result_t error_result = ERROR_RESULT_REMOTE_OFFLINE;
+volatile Error_Result_t error_result_debug = ERROR_RESULT_REMOTE_OFFLINE;
+volatile Error_Debug_t error_debug = {
+    .result = ERROR_RESULT_REMOTE_OFFLINE,
+    .stage = ERROR_STAGE_BOOT
+};
 static volatile uint8_t emergency_stop_triggered;
 static volatile uint8_t controls_enabled;
 static uint32_t arming_imu_sequence;
 
 extern osThreadId ErrorTaskHandle;
 
+#define ERROR_MOTOR_ONLINE_LF   (1U << 0)
+#define ERROR_MOTOR_ONLINE_RF   (1U << 1)
+#define ERROR_MOTOR_ONLINE_LB   (1U << 2)
+#define ERROR_MOTOR_ONLINE_RB   (1U << 3)
+#define ERROR_MOTOR_ONLINE_YAW  (1U << 4)
+#define ERROR_MOTOR_ONLINE_PITCH (1U << 5)
+
+static void Error_SetState(Error_Result_t result, Error_DebugStage_t stage)
+{
+    error_result = result;
+    error_result_debug = result;
+    error_debug.result = result;
+    error_debug.stage = stage;
+}
+
+static uint8_t Error_GetMotorOnlineMask(void)
+{
+    uint8_t mask = 0U;
+
+    if (Motor_IsOnline(&chassis.motor_3508[LF]) != 0U) {
+        mask |= ERROR_MOTOR_ONLINE_LF;
+    }
+    if (Motor_IsOnline(&chassis.motor_3508[RF]) != 0U) {
+        mask |= ERROR_MOTOR_ONLINE_RF;
+    }
+    if (Motor_IsOnline(&chassis.motor_3508[LB]) != 0U) {
+        mask |= ERROR_MOTOR_ONLINE_LB;
+    }
+    if (Motor_IsOnline(&chassis.motor_3508[RB]) != 0U) {
+        mask |= ERROR_MOTOR_ONLINE_RB;
+    }
+    if (Motor_IsOnline(&gimbal.yaw_motor) != 0U) {
+        mask |= ERROR_MOTOR_ONLINE_YAW;
+    }
+    if (Motor_IsOnline(&gimbal.pitch_motor) != 0U) {
+        mask |= ERROR_MOTOR_ONLINE_PITCH;
+    }
+    return mask;
+}
+
 static void Error_PrepareArming(void)
 {
     controls_enabled = 0U;
     arming_imu_sequence = IMU_Attitude_GetUpdateSequence();
     Remote_ResetValidFrameCount();
+    error_debug.controls_enabled = 0U;
+    error_debug.valid_frames_ready = 0U;
+    error_debug.arming_imu_sequence = arming_imu_sequence;
 }
 
 /**
@@ -30,7 +78,8 @@ static void Error_PrepareArming(void)
  */
 void Error_Init(void)
 {
-    error_result = ERROR_RESULT_REMOTE_OFFLINE;
+    Error_SetState(ERROR_RESULT_REMOTE_OFFLINE,
+                   ERROR_STAGE_REMOTE_OFFLINE);
     emergency_stop_triggered = 0U;
     Error_PrepareArming();
 }
@@ -52,56 +101,106 @@ void Error_MonitorUpdate(void)
 {
     RC_Ctrl_t remote;
     Error_Result_t result;
+    uint8_t remote_online;
+    uint8_t imu_ready;
 
     Remote_GetSnapshot(&remote);
+    remote_online = Remote_IsOnline();
+    imu_ready = IMU_Attitude_IsReady();
+
+    error_debug.remote_online = remote_online;
+    error_debug.remote_s1 = remote.rc.s1;
+    error_debug.remote_s2 = remote.rc.s2;
+    error_debug.controls_centered = Remote_ControlsAreCentered(&remote);
+    error_debug.valid_frames_ready = Remote_HasFiveValidFrames();
+    error_debug.imu_ready = imu_ready;
+    error_debug.chassis_initialized = Chassis_IsInitialized();
+    error_debug.gimbal_initialized = Gimbal_IsInitialized();
+    error_debug.can_healthy = CAN_IsHealthy();
+    error_debug.motor_online_mask = Error_GetMotorOnlineMask();
+    error_debug.imu_sequence = IMU_Attitude_GetUpdateSequence();
+    error_debug.arming_imu_sequence = arming_imu_sequence;
+    error_debug.controls_enabled = controls_enabled;
+
     result = Error_Update(
-        Remote_IsOnline(),
+        remote_online,
         remote.rc.s1,
-        IMU_Attitude_IsReady());
+        imu_ready);
 
     if (result != ERROR_RESULT_NONE) {
         Error_PrepareArming();
-        error_result = result;
+        if (result == ERROR_RESULT_REMOTE_OFFLINE) {
+            Error_SetState(result, ERROR_STAGE_REMOTE_OFFLINE);
+        } else if (result == ERROR_RESULT_EMERGENCY_STOP) {
+            Error_SetState(result, ERROR_STAGE_EMERGENCY_STOP);
+        } else if (result == ERROR_RESULT_STOPPED) {
+            Error_SetState(result, ERROR_STAGE_SWITCH_STOPPED);
+        } else {
+            Error_SetState(result, ERROR_STAGE_IMU_NOT_READY);
+        }
         return;
     }
 
-    if ((Chassis_IsInitialized() == 0U) ||
-        (Gimbal_IsInitialized() == 0U)) {
+    if (error_debug.chassis_initialized == 0U) {
         Error_PrepareArming();
-        error_result = ERROR_RESULT_ARMING;
+        Error_SetState(ERROR_RESULT_ARMING,
+                       ERROR_STAGE_WAIT_CHASSIS_INIT);
         return;
     }
 
-    if (CAN_IsHealthy() == 0U) {
+    if (error_debug.gimbal_initialized == 0U) {
         Error_PrepareArming();
-        error_result = ERROR_RESULT_CAN_FAULT;
+        Error_SetState(ERROR_RESULT_ARMING,
+                       ERROR_STAGE_WAIT_GIMBAL_INIT);
+        return;
+    }
+
+    if (error_debug.can_healthy == 0U) {
+        Error_PrepareArming();
+        Error_SetState(ERROR_RESULT_CAN_FAULT,
+                       ERROR_STAGE_CAN_FAULT);
         return;
     }
 
     if (Motor_FeedbackHealthy() == 0U) {
         Error_PrepareArming();
-        error_result = ERROR_RESULT_MOTOR_FEEDBACK_TIMEOUT;
+        Error_SetState(ERROR_RESULT_MOTOR_FEEDBACK_TIMEOUT,
+                       ERROR_STAGE_MOTOR_FEEDBACK_TIMEOUT);
         return;
     }
 
     if (controls_enabled == 0U) {
-        if ((remote.rc.s2 != RC_SW_MID) ||
-            (Remote_ControlsAreCentered(&remote) == 0U)) {
+        if (remote.rc.s2 != RC_SW_MID) {
             Error_PrepareArming();
-            error_result = ERROR_RESULT_ARMING;
+            Error_SetState(ERROR_RESULT_ARMING,
+                           ERROR_STAGE_WAIT_S2_MID);
             return;
         }
 
-        if ((Remote_HasFiveValidFrames() == 0U) ||
-            (IMU_Attitude_GetUpdateSequence() == arming_imu_sequence)) {
-            error_result = ERROR_RESULT_ARMING;
+        if (error_debug.controls_centered == 0U) {
+            Error_PrepareArming();
+            Error_SetState(ERROR_RESULT_ARMING,
+                           ERROR_STAGE_WAIT_STICK_CENTER);
+            return;
+        }
+
+        if (Remote_HasFiveValidFrames() == 0U) {
+            Error_SetState(ERROR_RESULT_ARMING,
+                           ERROR_STAGE_WAIT_REMOTE_FRAMES);
+            return;
+        }
+
+        if (IMU_Attitude_GetUpdateSequence() == arming_imu_sequence) {
+            Error_SetState(ERROR_RESULT_ARMING,
+                           ERROR_STAGE_WAIT_IMU_UPDATE);
             return;
         }
 
         controls_enabled = 1U;
+        error_debug.controls_enabled = 1U;
     }
 
-    error_result = ERROR_RESULT_NONE;
+    Error_SetState(ERROR_RESULT_NONE, ERROR_STAGE_READY);
 }
 
 /**
@@ -115,6 +214,8 @@ void Error_TriggerEmergencyStop(void)
     }
 
     Error_PrepareArming();
+    Error_SetState(ERROR_RESULT_EMERGENCY_STOP,
+                   ERROR_STAGE_EMERGENCY_STOP);
     emergency_stop_triggered = 1U;
     if (ErrorTaskHandle != NULL) {
         (void)osThreadResume(ErrorTaskHandle);
@@ -170,7 +271,8 @@ void OS_ErrorCallback(void const *argument)
         /* 上电或上一次急停解除后挂起，由 Error_TriggerEmergencyStop 唤醒。 */
         (void)osThreadSuspend(ErrorTaskHandle);
 
-        error_result = ERROR_RESULT_EMERGENCY_STOP;
+        Error_SetState(ERROR_RESULT_EMERGENCY_STOP,
+                       ERROR_STAGE_EMERGENCY_STOP);
         Error_PrepareArming();
         Chassis_ResetControl();
         gimbal.yaw_motor.give_current = 0.0f;
@@ -190,6 +292,9 @@ void OS_ErrorCallback(void const *argument)
             }
 
             Remote_GetSnapshot(&remote);
+            error_debug.remote_online = Remote_IsOnline();
+            error_debug.remote_s1 = remote.rc.s1;
+            error_debug.remote_s2 = remote.rc.s2;
             if ((remote.rc.s1 == RC_SW_MID) ||
                 (remote.rc.s1 == RC_SW_UP)) {
                 Chassis_ResetControl();

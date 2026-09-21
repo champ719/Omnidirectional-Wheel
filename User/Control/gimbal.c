@@ -9,15 +9,9 @@
 #include "imu_temp_ctrl.h"
 #include <math.h>
 
-#define GIMBAL_JOYSTICK_YAW_SPEED_RADPS    6.0f   //云台yaw目标角速度
-#define GIMBAL_JOYSTICK_PITCH_SPEED_RADPS  0.0f   //云台pitch目标角速度
-#define GIMBAL_MOUSE_YAW_RAD_PER_COUNT     0.0030f//灵敏度
-#define GIMBAL_MOUSE_PITCH_RAD_PER_COUNT   0.0010f
-#define GIMBAL_MOUSE_MAX_DELTA_RAD         0.25f
-#define GIMBAL_MOUSE_FILTER_SIZE           5U     //鼠标增量滑动平均窗口，按帧计数
 #define GIMBAL_TASK_PERIOD_S               0.002f
 
-volatile Gimbal_t gimbal;
+Gimbal_t gimbal = {0};
 float test ;
 
 /* 鼠标增量每收到一帧只能吃一次，2ms 的任务会把同一帧重复叠加 */
@@ -60,31 +54,19 @@ void Gimbal_Init(void)
     0.1f, 0.02f, 0.05f, 0.25f, 1.6f, 0.8f,
     0.0f, 0.0f, 0.0f, 0.0f, 3.0f, 0.5f);
 
-  gimbal.gyro.yaw_w = 0.0f;
-  gimbal.gyro.pitch_w = 0.0f;
   gimbal.yaw.zero_angle = 1.04077f;
   /* 任务入口会等待 IMU 就绪；这里对齐当前朝向，使首次位置环误差为 0。 */
   current_yaw = IMU_Attitude_GetYawContinuousRad();
   gimbal.yaw.yaw_angle = current_yaw;
   gimbal.yaw.target_yaw_angle = current_yaw;
-  gimbal.yaw.target_yaw_w = 0.0f;
-  gimbal.yaw.fb_yaw_w = 0.0f;
-  gimbal.yaw.machine_yaw_angle = 0.0f;
   gimbal.pitch.zero_angle = 5.1847f;
-  gimbal.pitch.pitch_angle = 0.0f;
-  gimbal.pitch.target_pitch_angle = 0.0f;
-  gimbal.pitch.fb_pitch_w = 0.0f;
-  gimbal.pitch.target_pitch_w = 0.0f;
   gimbal.pitch.k_gravity_comp = 0.32f;
   gimbal.pitch.gravity_comp_offset = 0.55059f;
-  gimbal.pitch.gravity_comp = 0.0f;
-  gimbal.yaw_motor.give_current = 0.0f;
-  gimbal.pitch_motor.give_current = 0.0f;
 
   Remote_GetSnapshot(&remote);
   gimbal_last_mouse_sequence = remote.update_sequence;
-  Filter_InitAverFilter(&gimbal_mouse_yaw_filter, GIMBAL_MOUSE_FILTER_SIZE);
-  Filter_InitAverFilter(&gimbal_mouse_pitch_filter, GIMBAL_MOUSE_FILTER_SIZE);
+  Filter_InitAverFilter(&gimbal_mouse_yaw_filter, 5U);
+  Filter_InitAverFilter(&gimbal_mouse_pitch_filter, 5U);
   gimbal_initialized = 1U;
 }
 
@@ -113,9 +95,9 @@ static void Gimbal_ReadCommand(float *yaw_delta, float *pitch_delta)
   if (Rocker_Ctrl != 0U) {
 
     *yaw_delta = Remote_NormalizeChannel(remote.rc.ch0) *
-                 GIMBAL_JOYSTICK_YAW_SPEED_RADPS * GIMBAL_TASK_PERIOD_S * (-1.0f); 
+                 6.0f * GIMBAL_TASK_PERIOD_S * (-1.0f); 
     *pitch_delta = Remote_NormalizeChannel(remote.rc.ch1) *
-                   GIMBAL_JOYSTICK_PITCH_SPEED_RADPS * GIMBAL_TASK_PERIOD_S;
+                   0.0f * GIMBAL_TASK_PERIOD_S;
     gimbal_last_mouse_sequence = remote.update_sequence;
 
     Filter_AverClear(&gimbal_mouse_yaw_filter);
@@ -132,14 +114,14 @@ static void Gimbal_ReadCommand(float *yaw_delta, float *pitch_delta)
      滤波器对增量的直流增益为 1，积分下来总角度不会被拉偏。 */
   *yaw_delta = limit_range(
       Filter_AverCalc(&gimbal_mouse_yaw_filter,
-                      -(float)remote.mouse.x * GIMBAL_MOUSE_YAW_RAD_PER_COUNT),
-      -GIMBAL_MOUSE_MAX_DELTA_RAD,
-      GIMBAL_MOUSE_MAX_DELTA_RAD);
+                      -(float)remote.mouse.x * 0.0030f),
+      -0.25f,
+      0.25f);
   *pitch_delta = limit_range(
       Filter_AverCalc(&gimbal_mouse_pitch_filter,
-                      -(float)remote.mouse.y * GIMBAL_MOUSE_PITCH_RAD_PER_COUNT),
-      -GIMBAL_MOUSE_MAX_DELTA_RAD,
-      GIMBAL_MOUSE_MAX_DELTA_RAD);
+                      -(float)remote.mouse.y * 0.0030f),
+      -0.25f,
+      0.25f);
 }
 
 static void Yaw_Speed_Calc(float yaw_angle_change)
@@ -159,10 +141,10 @@ static void Pitch_Speed_Calc(float angle_change)
 {
   gimbal.pitch.target_pitch_angle += angle_change ;
 
-  if (gimbal.pitch.target_pitch_angle >  PITCH_MAX_ANGLE)
-    gimbal.pitch.target_pitch_angle =  PITCH_MAX_ANGLE;
-  if (gimbal.pitch.target_pitch_angle < PITCH_MIN_ANGLE)
-    gimbal.pitch.target_pitch_angle = PITCH_MIN_ANGLE;
+  if (gimbal.pitch.target_pitch_angle >  0.5345)
+    gimbal.pitch.target_pitch_angle =  0.5345;
+  if (gimbal.pitch.target_pitch_angle < -0.3627)
+    gimbal.pitch.target_pitch_angle = -0.3627;
 
   gimbal.pitch.fb_pitch_w = 0.0f;
   gimbal.pitch.target_pitch_w = 0.0f;

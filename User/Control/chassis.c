@@ -6,20 +6,21 @@
 #include "gimbal.h"
 #include <math.h>
 
-#define CHASSIS_COS45         0.707106f
+#define COS45         0.707106f
 #define CHASSIS_TASK_PERIOD_S 0.002f
-#define CHASSIS_PI            3.14159265f
-#define CHASSIS_KEYBOARD_MOVE_RATIO       0.60f
-#define CHASSIS_SPIN_MOVE_RATIO           0.40f
-#define CHASSIS_SPIN_RATIO_CTRL           0.30f
-#define CHASSIS_SPIN_RATIO_DEFAULT        0.60f
-#define CHASSIS_SPIN_RATIO_SHIFT          1.00f
+#define PI            3.14159265f
 
-volatile Chassis_t chassis = {0};
+/* 小陀螺进入与换向保留斜坡；退出按模式要求直接切回跟随。 */
+#define CHASSIS_FOLLOW_VW_SLOPE_RAD_S2       10.0f
+#define CHASSIS_SPIN_ENTER_SLOPE_RAD_S2        5.0f
+#define CHASSIS_SPIN_REVERSE_SLOPE_RAD_S2      3.0f
+
+ Chassis_t chassis = {0};
 
 /* 上一拍的按键位图，用来抓 Q/E 的下降沿。持续按住只切一次模式。 */
 static uint16_t chassis_last_keys;
 static volatile uint8_t chassis_initialized;
+static uint8_t chassis_spin_exit_immediate;
 
 void Chassis_Init(void)
 {
@@ -70,7 +71,8 @@ void Chassis_Init(void)
     Slope_Init(&chassis.move.ySlope,
                2.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
     Slope_Init(&chassis.move.spinSlope,
-               10.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
+               CHASSIS_FOLLOW_VW_SLOPE_RAD_S2 * CHASSIS_TASK_PERIOD_S,
+               0.0f);
 
     PowerControl_Init();
     Chassis_ResetControl();
@@ -92,6 +94,9 @@ void Chassis_ResetControl(void)
     Slope_Reset(&chassis.move.xSlope, 0.0f);
     Slope_Reset(&chassis.move.ySlope, 0.0f);
     Slope_Reset(&chassis.move.spinSlope, 0.0f);
+    Slope_SetStep(&chassis.move.spinSlope,
+                  CHASSIS_FOLLOW_VW_SLOPE_RAD_S2 * CHASSIS_TASK_PERIOD_S);
+    chassis_spin_exit_immediate = 0U;
 
     chassis.move.vx = 0.0f;
     chassis.move.vy = 0.0f;
@@ -140,8 +145,8 @@ static void Chassis_ReadCommand(float *forward, float *right)
 
         f = (float)((keys & RC_KEY_A) != 0U) - (float)((keys & RC_KEY_D) != 0U);
         r = (float)((keys & RC_KEY_W) != 0U) - (float)((keys & RC_KEY_S) != 0U);
-        f *= CHASSIS_KEYBOARD_MOVE_RATIO;
-        r *= CHASSIS_KEYBOARD_MOVE_RATIO;
+        f *= 0.60f;
+        r *= 0.60f;
     }
 
     /* 斜向合成时限制幅值，避免 45° 方向速度超出上限 */
@@ -225,13 +230,47 @@ static void Chassis_UpdateModeKey(void)
     }
 }
 
+/* 根据模式切换方向设置 spinSlope 的变化率。斜坡值保持连续，不在切换时重置。 */
+static void Chassis_ConfigureSpinTransition(Chassis_Mode_e previous_mode,
+                                            Chassis_Mode_e current_mode)
+{
+    uint8_t previous_is_spin;
+    uint8_t current_is_spin;
+    float rate;
+
+    if (previous_mode == current_mode) {
+        return;
+    }
+
+    previous_is_spin = ((previous_mode == ChassisMode_SpinLeft) ||
+                        (previous_mode == ChassisMode_SpinRight)) ? 1U : 0U;
+    current_is_spin = ((current_mode == ChassisMode_SpinLeft) ||
+                       (current_mode == ChassisMode_SpinRight)) ? 1U : 0U;
+
+    if ((previous_is_spin == 0U) && (current_is_spin != 0U)) {
+        rate = CHASSIS_SPIN_ENTER_SLOPE_RAD_S2;
+        chassis_spin_exit_immediate = 0U;
+    } else if ((previous_is_spin != 0U) && (current_is_spin == 0U)) {
+        /* 退出不做斜坡；跟随处理函数算出目标后会直接同步当前值。 */
+        rate = CHASSIS_FOLLOW_VW_SLOPE_RAD_S2;
+        chassis_spin_exit_immediate = 1U;
+    } else {
+        /* 左右小陀螺直接换向时也必须缓慢穿过零速。 */
+        rate = CHASSIS_SPIN_REVERSE_SLOPE_RAD_S2;
+        chassis_spin_exit_immediate = 0U;
+    }
+
+    Slope_SetStep(&chassis.move.spinSlope,
+                  rate * CHASSIS_TASK_PERIOD_S);
+}
+
 /*旋转状态机*/
 static void Chassis_HandleFollow(void) //底盘跟随模式
 {
     float angle = chassis.rotate.relativeAngle;
-    if(angle >= CHASSIS_PI)
+    if(angle >= PI)
         angle -= 6.28318531f;
-    if(angle < -CHASSIS_PI)
+    if(angle < -PI)
         angle += 6.28318531f;
     float deadzone = 0.00174532925f;
     float pid_angle = 0.0f;
@@ -253,6 +292,10 @@ static void Chassis_HandleFollow(void) //底盘跟随模式
           -chassis.move.maxVw,
           chassis.move.maxVw);
     Slope_SetTarget(&chassis.move.spinSlope, chassis.rotate.pid.output);
+    if (chassis_spin_exit_immediate != 0U) {
+        Slope_Reset(&chassis.move.spinSlope, chassis.rotate.pid.output);
+        chassis_spin_exit_immediate = 0U;
+    }
 }
 
 static void Chassis_HandleSpin(void) //小陀螺模式
@@ -263,22 +306,18 @@ static void Chassis_HandleSpin(void) //小陀螺模式
 
         Remote_GetSnapshot(&remote);
         if ((remote.key.v & RC_KEY_CTRL) != 0U)
-            chassis.rotate.ratio = CHASSIS_SPIN_RATIO_CTRL;
+            chassis.rotate.ratio = 0.50f;
         else if ((remote.key.v & RC_KEY_SHIFT) != 0U)
-            chassis.rotate.ratio = CHASSIS_SPIN_RATIO_SHIFT;
-        else
-            chassis.rotate.ratio = CHASSIS_SPIN_RATIO_DEFAULT;
-    }
-    else if(chassis.pattern == Chassis_control)
-    {
-        if(ABS(Slope_GetVal(&chassis.move.xSlope)) / chassis.move.maxVx + ABS(Slope_GetVal(&chassis.move.ySlope)) / chassis.move.maxVy > 0.05f)
-            chassis.rotate.ratio = 0.4f;
-        else
             chassis.rotate.ratio = 1.0f;
+        else
+            chassis.rotate.ratio = 0.75f;
     }
     else
     {
-        chassis.rotate.ratio = 0.5f;
+        if(ABS(Slope_GetVal(&chassis.move.xSlope)) / chassis.move.maxVx + ABS(Slope_GetVal(&chassis.move.ySlope)) / chassis.move.maxVy > 0.05f)
+            chassis.rotate.ratio = 0.6f;
+        else
+            chassis.rotate.ratio = 1.0f;
     }
     Slope_SetTarget(&chassis.move.spinSlope,
                     chassis.move.maxVw * chassis.rotate.ratio * Chassis_SpinDirection());
@@ -290,6 +329,7 @@ static void Chassis_UpdateSlope(void)
     (void)Slope_NextVal(&chassis.move.xSlope);
     (void)Slope_NextVal(&chassis.move.ySlope);
     (void)Slope_NextVal(&chassis.move.spinSlope);
+
 }
 
 /*更新移动数据*/
@@ -309,8 +349,8 @@ void Chassis_UpdateMove(void)
     {
         /* 键鼠修饰键只调整小陀螺转速，平移始终使用固定降速比例。 */
         if (Rocker_Ctrl == 0U) {
-            maxVx *= CHASSIS_SPIN_MOVE_RATIO;
-            maxVy *= CHASSIS_SPIN_MOVE_RATIO;
+            maxVx *= 0.40f;
+            maxVy *= 0.40f;
         } else {
             maxVx *= chassis.rotate.ratio;
             maxVy *= chassis.rotate.ratio;
@@ -329,6 +369,8 @@ void Chassis_UpdateMove(void)
 
 void Task_Chassis_Callback(void)
 {
+    Chassis_Mode_e previous_mode;
+
     /* 故障状态下不发运动指令，只清斜坡和目标值 */
     if (Error_GetResult() != ERROR_RESULT_NONE) {
         Chassis_ResetControl();
@@ -336,7 +378,9 @@ void Task_Chassis_Callback(void)
     }
 
     Chassis_UpdateAngle();
+    previous_mode = chassis.rotate.mode;
     Chassis_UpdateModeKey();
+    Chassis_ConfigureSpinTransition(previous_mode, chassis.rotate.mode);
 
     switch(chassis.rotate.mode) //更新两种旋转模式状态机
     {
@@ -355,7 +399,7 @@ void Task_Chassis_Callback(void)
 
 
     /***全向轮解算各轮子转速****/
-    float cos45 = CHASSIS_COS45;
+    float cos45 = COS45;
 
     //先反解车当前真实速度
     float real_wheel_v[4];
