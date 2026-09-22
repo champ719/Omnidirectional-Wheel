@@ -7,6 +7,7 @@
 #include "chassis.h"
 #include "cmsis_os.h"
 #include "imu_temp_ctrl.h"
+#include "task.h"
 #include <math.h>
 
 #define GIMBAL_TASK_PERIOD_S               0.002f
@@ -68,6 +69,7 @@ void Gimbal_Init(void)
   Filter_InitAverFilter(&gimbal_mouse_yaw_filter, 5U);
   Filter_InitAverFilter(&gimbal_mouse_pitch_filter, 5U);
   gimbal_initialized = 1U;
+  Motor_NotifyControlInitialized();
 }
 
 uint8_t Gimbal_IsInitialized(void)
@@ -184,20 +186,26 @@ void Gimbal_Update(void)
 /**
  * @brief 云台任务入口。
  * @param argument FreeRTOS 任务参数，当前未使用。
- * @note 先等 1.2s 让 IMU 上电稳定，再初始化云台并进 2ms 控制环。
- *       算出的 give_current 由 MotorTask 发 CAN。
+ * @note 阻塞等待IMU完成初始化和静态校准，再初始化云台并进入2ms控制环。
+ *       算出的give_current由MotorTask统一发送。
  */
 void OS_GimbalCallback(void const *argument)
 {
+  TickType_t last_wake;
+  const TickType_t period = pdMS_TO_TICKS(2U);
+
   (void)argument;
 
-  osDelay(1200);
-  while (IMU_Attitude_IsReady() == 0U) {
-    osDelay(2);
-  }
+  IMU_Attitude_WaitUntilReady();
   Gimbal_Init();
+  last_wake = xTaskGetTickCount();
   for (;;)
   {
+    TickType_t now = xTaskGetTickCount();
+
+    if ((now - last_wake) > (period * 2U)) {
+      last_wake = now;
+    }
     /* 故障状态下不发运动指令，只清输出 */
     if (Error_GetResult() != ERROR_RESULT_NONE) {
       gimbal.yaw_motor.give_current = 0.0f;
@@ -212,6 +220,7 @@ void OS_GimbalCallback(void const *argument)
         gimbal.yaw.target_yaw_w = 0.0f;
         gimbal.yaw.fb_yaw_w = 0.0f;
         gimbal.yaw_motor.give_current = 0.0f;
+
         PID_Clear(&gimbal.yaw_motor.pid_position);
         PID_Clear(&gimbal.yaw_motor.pid_speed);
         Remote_GetSnapshot(&remote);
@@ -223,6 +232,6 @@ void OS_GimbalCallback(void const *argument)
     } else {
       Gimbal_Update();
     }
-    osDelay(2);
+    vTaskDelayUntil(&last_wake, period);
   }
 }

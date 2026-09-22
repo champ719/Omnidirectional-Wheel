@@ -48,9 +48,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 /* USER CODE END Variables */
-osThreadId defaultTaskHandle;
 osThreadId IMUTaskHandle;
-osThreadId BeepTaskHandle;
 osThreadId MotorTaskHandle;
 osThreadId ErrorTaskHandle;
 osThreadId ChassisHandle;
@@ -62,9 +60,7 @@ osThreadId RcTaskHandle;
 
 /* USER CODE END FunctionPrototypes */
 
-void StartDefaultTask(void const * argument);
 void OS_IMUCallback(void const * argument);
-void OS_BeepCallback(void const * argument);
 void OS_MotorCallback(void const * argument);
 void OS_ErrorCallback(void const * argument);
 void OS_ChassisCallback(void const * argument);
@@ -116,17 +112,9 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
-
   /* definition and creation of IMUTask */
   osThreadDef(IMUTask, OS_IMUCallback, osPriorityNormal, 0, 1024);
   IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
-
-  /* definition and creation of BeepTask */
-  osThreadDef(BeepTask, OS_BeepCallback, osPriorityNormal, 0, 128);
-  BeepTaskHandle = osThreadCreate(osThread(BeepTask), NULL);
 
   /* definition and creation of MotorTask */
   osThreadDef(MotorTask, OS_MotorCallback, osPriorityNormal, 0, 512);
@@ -155,24 +143,6 @@ void MX_FREERTOS_Init(void) {
 
 }
 
-/* USER CODE BEGIN Header_StartDefaultTask */
-/**
-  * @brief  Function implementing the defaultTask thread.
-  * @param  argument: Not used
-  * @retval None
-  */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
-{
-  /* USER CODE BEGIN StartDefaultTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartDefaultTask */
-}
-
 /* USER CODE BEGIN Header_OS_IMUCallback */
 /**
 * @brief Function implementing the IMUTask thread.
@@ -183,30 +153,12 @@ void StartDefaultTask(void const * argument)
 __weak void OS_IMUCallback(void const * argument)
 {
   /* USER CODE BEGIN OS_IMUCallback */
-  /* Infinite loop */
+  (void)argument;
   for(;;)
   {
-    osDelay(1);
+    vTaskSuspend(NULL);
   }
   /* USER CODE END OS_IMUCallback */
-}
-
-/* USER CODE BEGIN Header_OS_BeepCallback */
-/**
-* @brief Function implementing the BeepTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_OS_BeepCallback */
-__weak void OS_BeepCallback(void const * argument)
-{
-  /* USER CODE BEGIN OS_BeepCallback */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END OS_BeepCallback */
 }
 
 /* USER CODE BEGIN Header_OS_MotorCallback */
@@ -219,10 +171,10 @@ __weak void OS_BeepCallback(void const * argument)
 __weak void OS_MotorCallback(void const * argument)
 {
   /* USER CODE BEGIN OS_MotorCallback */
-  /* Infinite loop */
+  (void)argument;
   for(;;)
   {
-    osDelay(1);
+    vTaskSuspend(NULL);
   }
   /* USER CODE END OS_MotorCallback */
 }
@@ -240,7 +192,7 @@ __weak void OS_ErrorCallback(void const * argument)
   (void)argument;
   for(;;)
   {
-    osDelay(2);
+    vTaskSuspend(NULL);
   }
   /* USER CODE END OS_ErrorCallback */
 }
@@ -255,10 +207,10 @@ __weak void OS_ErrorCallback(void const * argument)
 __weak void OS_ChassisCallback(void const * argument)
 {
   /* USER CODE BEGIN OS_ChassisCallback */
-  /* Infinite loop */
+  (void)argument;
   for(;;)
   {
-    osDelay(1);
+    vTaskSuspend(NULL);
   }
   /* USER CODE END OS_ChassisCallback */
 }
@@ -273,10 +225,10 @@ __weak void OS_ChassisCallback(void const * argument)
 __weak void OS_GimbalCallback(void const * argument)
 {
   /* USER CODE BEGIN OS_GimbalCallback */
-  /* Infinite loop */
+  (void)argument;
   for(;;)
   {
-    osDelay(1);
+    vTaskSuspend(NULL);
   }
   /* USER CODE END OS_GimbalCallback */
 }
@@ -291,10 +243,10 @@ __weak void OS_GimbalCallback(void const * argument)
 __weak void OS_RcCallback(void const * argument)
 {
   /* USER CODE BEGIN OS_RcCallback */
-  /* Infinite loop */
+  (void)argument;
   for(;;)
   {
-    osDelay(1);
+    vTaskSuspend(NULL);
   }
   /* USER CODE END OS_RcCallback */
 }

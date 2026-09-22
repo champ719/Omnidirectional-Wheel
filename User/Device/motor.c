@@ -4,6 +4,9 @@
 #include "chassis.h"
 #include "cmsis_os.h"
 #include "gimbal.h"
+#include "task.h"
+
+extern osThreadId MotorTaskHandle;
 
 void Motor_Init(volatile Motor_t *motor, uint32_t cmd_id, uint8_t motor_type,
   float kp_speed, float ki_speed, float kd_speed, float kf_speed,
@@ -123,21 +126,41 @@ void Motor_STOP(void)
   CAN_SendMessage(&hcan2, &gimbal.pitch_motor, 0, 0, 0, 0);
 }
 
-// FreeRTOS 电机任务入口：把各模块算好的 give_current 周期发到 CAN 总线。
+void Motor_NotifyControlInitialized(void)
+{
+    if (MotorTaskHandle != NULL) {
+        xTaskNotifyGive(MotorTaskHandle);
+    }
+}
+
+// FreeRTOS电机任务入口：每2ms覆盖控制帧缓存，再尝试送入CAN硬件邮箱。
 void OS_MotorCallback(void const *argument)
 {
+    TickType_t last_wake;
+    const TickType_t period = pdMS_TO_TICKS(2U);
+
     (void)argument;
 
-    /* 等底盘/云台任务完成各自的 Chassis_Init / Gimbal_Init 再开始发帧 */
-    osDelay(1500);
+    /* 电机命令ID由底盘和云台初始化写入。用通知等待真实就绪条件，
+       不再依赖固定上电延时，也不轮询唤醒。 */
+    while ((Chassis_IsInitialized() == 0U) ||
+           (Gimbal_IsInitialized() == 0U)) {
+        (void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    }
+    last_wake = xTaskGetTickCount();
 
     for (;;) {
+        TickType_t now = xTaskGetTickCount();
+
+        if ((now - last_wake) > (period * 2U)) {
+            last_wake = now;
+        }
         if (Error_GetResult() != ERROR_RESULT_NONE) {
             Motor_STOP();
         } else {
             Motor_UPDATE();
         }
         CAN_Service();
-        osDelay(1);
+        vTaskDelayUntil(&last_wake, period);
     }
 }

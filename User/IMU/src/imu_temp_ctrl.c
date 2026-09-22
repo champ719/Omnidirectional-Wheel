@@ -20,6 +20,7 @@ INS_t INS;
 
 static volatile uint8_t imu_ready;
 static volatile uint32_t imu_update_sequence;
+static TaskHandle_t imu_ready_waiter;
 static float gyro_bias[3];
 static float gyro_body[3];
 static uint32_t calibration_samples;
@@ -96,6 +97,7 @@ void INS_Init(void)
     DWT_Init(SystemCoreClock / 1000000U);
     imu_ready = 0U;
     imu_update_sequence = 0U;
+    imu_ready_waiter = NULL;
     calibration_samples = 0U;
     while (BMI088_init() != 0U) {
         vTaskDelay(pdMS_TO_TICKS(10U));
@@ -138,13 +140,43 @@ void INS_Task(void)
     INS.pitch = QEKF_INS.Pitch * DEG_TO_RAD;
     INS.yaw = QEKF_INS.Yaw * DEG_TO_RAD;
     INS.YawTotalAngle = QEKF_INS.YawTotalAngle * DEG_TO_RAD;
-    imu_ready = 1U;
     imu_update_sequence++;
+
+    if (imu_ready == 0U) {
+        TaskHandle_t waiter;
+
+        taskENTER_CRITICAL();
+        imu_ready = 1U;
+        waiter = imu_ready_waiter;
+        imu_ready_waiter = NULL;
+        taskEXIT_CRITICAL();
+
+        if (waiter != NULL) {
+            xTaskNotifyGive(waiter);
+        }
+    }
 }
 
 uint8_t IMU_Attitude_IsReady(void)
 {
     return imu_ready;
+}
+
+void IMU_Attitude_WaitUntilReady(void)
+{
+    TaskHandle_t current_task = xTaskGetCurrentTaskHandle();
+
+    while (imu_ready == 0U) {
+        taskENTER_CRITICAL();
+        if (imu_ready == 0U) {
+            imu_ready_waiter = current_task;
+        }
+        taskEXIT_CRITICAL();
+
+        if (imu_ready == 0U) {
+            (void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        }
+    }
 }
 
 void IMU_Attitude_GetGyroBody(float output[3])

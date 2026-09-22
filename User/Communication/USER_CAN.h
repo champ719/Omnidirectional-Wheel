@@ -8,6 +8,8 @@
 typedef struct
 {
     volatile uint32_t tx_error_count;
+    volatile uint32_t tx_congestion_count;
+    volatile uint32_t tx_overwrite_count;
     volatile uint32_t rx_error_count;
     volatile uint32_t bus_off_count;
     volatile uint32_t restart_count;

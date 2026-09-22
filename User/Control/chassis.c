@@ -4,6 +4,7 @@
 #include "Remote.h"
 #include "cmsis_os.h"
 #include "gimbal.h"
+#include "task.h"
 #include <math.h>
 
 #define COS45         0.707106f
@@ -77,6 +78,7 @@ void Chassis_Init(void)
     PowerControl_Init();
     Chassis_ResetControl();
     chassis_initialized = 1U;
+    Motor_NotifyControlInitialized();
 }
 
 uint8_t Chassis_IsInitialized(void)
@@ -451,18 +453,26 @@ void Task_Chassis_Callback(void)
 /**
  * @brief 底盘任务入口。
  * @param argument FreeRTOS 任务参数，当前未使用。
- * @note 先等 1.5s 让 IMU 和电调上电稳定，再初始化底盘并进 2ms 控制环。
- *       解算出的目标轮速写进 motor_3508[].target_speed，由 MotorTask 发 CAN。
+ * @note 立即初始化底盘并进入2ms控制环；系统故障状态会保持输出为零。
+ *       解算出的目标轮速写进motor_3508[].target_speed，由MotorTask统一发送。
  */
 void OS_ChassisCallback(void const * argument)
 {
+	TickType_t last_wake;
+	const TickType_t period = pdMS_TO_TICKS(2U);
+
 	(void)argument;
 
-	osDelay(1500);
 	Chassis_Init();
+	last_wake = xTaskGetTickCount();
     for(;;)
     {
+		TickType_t now = xTaskGetTickCount();
+
+		if ((now - last_wake) > (period * 2U)) {
+			last_wake = now;
+		}
 		Task_Chassis_Callback();
-        osDelay(2);
+		vTaskDelayUntil(&last_wake, period);
     }
 }

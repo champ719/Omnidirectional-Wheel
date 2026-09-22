@@ -48,8 +48,9 @@ uint8_t Motor_IsOnline(const volatile Motor_t *motor);
 uint8_t Motor_FeedbackHealthy(void);
 void Motor_UPDATE(void);
 void Motor_STOP(void);
+void Motor_NotifyControlInitialized(void);
 
-/* FreeRTOS 电机任务入口：1ms 一轮，把各模块算好的 give_current 发到 CAN 总线 */
+/* FreeRTOS电机任务入口：2ms一轮，将最新give_current提交给CAN覆盖式缓存。 */
 void OS_MotorCallback(void const *argument);
 
 #endif

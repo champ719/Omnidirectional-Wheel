@@ -1,15 +1,33 @@
 #include "USER_CAN.h"
 #include "chassis.h"
 #include "gimbal.h"
+#include "FreeRTOS.h"
+#include "task.h"
 #include <string.h>
 
-#define CAN_TX_ERROR_RESTART_THRESHOLD 5U
 #define CAN_ERROR_NOTIFICATIONS \
     (CAN_IT_ERROR | CAN_IT_BUSOFF | CAN_IT_ERROR_WARNING | \
      CAN_IT_ERROR_PASSIVE | CAN_IT_LAST_ERROR_CODE)
+#define CAN_CONTROL_TX_SLOT_COUNT 3U
+
+typedef struct
+{
+    CAN_HandleTypeDef *hcan;
+    uint32_t std_id;
+    uint8_t data[8];
+    uint32_t sequence;
+    uint8_t pending;
+} CAN_ControlTxSlot_t;
 
 CAN_Diagnostics_t can1_diagnostics;
 CAN_Diagnostics_t can2_diagnostics;
+
+/* 控制帧只有三个固定组合。每个槽只保存对应 ID 的最新值，新的控制量会
+   覆盖尚未进入硬件邮箱的旧值，不形成软件 FIFO。 */
+static CAN_ControlTxSlot_t can_control_tx_slots[CAN_CONTROL_TX_SLOT_COUNT];
+static uint8_t can_service_active;
+static uint8_t can1_tx_scan_start;
+static uint8_t can2_tx_scan_start;
 
 static CAN_Diagnostics_t *CAN_GetDiagnostics(CAN_HandleTypeDef *hcan)
 {
@@ -18,6 +36,20 @@ static CAN_Diagnostics_t *CAN_GetDiagnostics(CAN_HandleTypeDef *hcan)
     }
     if (hcan == &hcan2) {
         return &can2_diagnostics;
+    }
+    return NULL;
+}
+
+static CAN_ControlTxSlot_t *CAN_GetControlTxSlot(CAN_HandleTypeDef *hcan,
+                                                  uint32_t std_id)
+{
+    uint32_t index;
+
+    for (index = 0U; index < CAN_CONTROL_TX_SLOT_COUNT; index++) {
+        if ((can_control_tx_slots[index].hcan == hcan) &&
+            (can_control_tx_slots[index].std_id == std_id)) {
+            return &can_control_tx_slots[index];
+        }
     }
     return NULL;
 }
@@ -128,6 +160,17 @@ void CAN_Init(void)
 
     memset(&can1_diagnostics, 0, sizeof(can1_diagnostics));
     memset(&can2_diagnostics, 0, sizeof(can2_diagnostics));
+    memset(can_control_tx_slots, 0, sizeof(can_control_tx_slots));
+    can_service_active = 0U;
+    can1_tx_scan_start = 0U;
+    can2_tx_scan_start = 0U;
+
+    can_control_tx_slots[0].hcan = &hcan1;
+    can_control_tx_slots[0].std_id = 0x200U;
+    can_control_tx_slots[1].hcan = &hcan1;
+    can_control_tx_slots[1].std_id = 0x1FFU;
+    can_control_tx_slots[2].hcan = &hcan2;
+    can_control_tx_slots[2].std_id = 0x1FFU;
 
     filter.FilterBank = 0;
     filter.FilterMode = CAN_FILTERMODE_IDMASK;
@@ -170,6 +213,8 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         if (diagnostics != NULL) {
             diagnostics->rx_error_count++;
             diagnostics->last_error = HAL_CAN_GetError(hcan);
+            /* HAL明确报告接收失败，由任务上下文完成控制器重启。 */
+            diagnostics->recovery_pending = 1U;
         }
         return;
     }
@@ -187,55 +232,38 @@ HAL_StatusTypeDef CAN_SendMessage(CAN_HandleTypeDef *hcan,
                                   uint16_t iq3,
                                   uint16_t iq4)
 {
-    CAN_TxHeaderTypeDef tx_header = {0};
     CAN_Diagnostics_t *diagnostics = CAN_GetDiagnostics(hcan);
-    HAL_StatusTypeDef status;
-    uint32_t tx_mailbox;
-    uint8_t tx_data[8];
+    CAN_ControlTxSlot_t *slot;
 
     if ((hcan == NULL) || (motor == NULL) || (diagnostics == NULL)) {
         return HAL_ERROR;
     }
 
-    tx_header.StdId = motor->cmd_id;
-    tx_header.IDE = CAN_ID_STD;
-    tx_header.RTR = CAN_RTR_DATA;
-    tx_header.DLC = 8U;
-    tx_header.TransmitGlobalTime = DISABLE;
-
-    tx_data[0] = (uint8_t)(iq1 >> 8U);
-    tx_data[1] = (uint8_t)iq1;
-    tx_data[2] = (uint8_t)(iq2 >> 8U);
-    tx_data[3] = (uint8_t)iq2;
-    tx_data[4] = (uint8_t)(iq3 >> 8U);
-    tx_data[5] = (uint8_t)iq3;
-    tx_data[6] = (uint8_t)(iq4 >> 8U);
-    tx_data[7] = (uint8_t)iq4;
-
-    if (HAL_CAN_GetTxMailboxesFreeLevel(hcan) == 0U) {
-        status = HAL_BUSY;
-    } else {
-        status = HAL_CAN_AddTxMessage(
-            hcan, &tx_header, tx_data, &tx_mailbox);
+    slot = CAN_GetControlTxSlot(hcan, motor->cmd_id);
+    if (slot == NULL) {
+        diagnostics->tx_error_count++;
+        diagnostics->last_tx_status = HAL_ERROR;
+        return HAL_ERROR;
     }
 
-    diagnostics->last_tx_status = status;
-    if (status == HAL_OK) {
-        diagnostics->consecutive_tx_errors = 0U;
-        return HAL_OK;
+    taskENTER_CRITICAL();
+    if (slot->pending != 0U) {
+        diagnostics->tx_overwrite_count++;
     }
+    slot->data[0] = (uint8_t)(iq1 >> 8U);
+    slot->data[1] = (uint8_t)iq1;
+    slot->data[2] = (uint8_t)(iq2 >> 8U);
+    slot->data[3] = (uint8_t)iq2;
+    slot->data[4] = (uint8_t)(iq3 >> 8U);
+    slot->data[5] = (uint8_t)iq3;
+    slot->data[6] = (uint8_t)(iq4 >> 8U);
+    slot->data[7] = (uint8_t)iq4;
+    slot->sequence++;
+    slot->pending = 1U;
+    taskEXIT_CRITICAL();
 
-    diagnostics->tx_error_count++;
-    diagnostics->last_error = HAL_CAN_GetError(hcan);
-    if (diagnostics->consecutive_tx_errors < UINT8_MAX) {
-        diagnostics->consecutive_tx_errors++;
-    }
-    if ((diagnostics->consecutive_tx_errors >=
-         CAN_TX_ERROR_RESTART_THRESHOLD) ||
-        ((diagnostics->last_error & HAL_CAN_ERROR_BOF) != 0U)) {
-        diagnostics->recovery_pending = 1U;
-    }
-    return status;
+    diagnostics->last_tx_status = HAL_OK;
+    return HAL_OK;
 }
 
 void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
@@ -259,28 +287,110 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 static void CAN_ServiceController(CAN_HandleTypeDef *hcan,
                                   CAN_Diagnostics_t *diagnostics)
 {
-    if (diagnostics->recovery_pending == 0U) {
-        return;
+    uint8_t *scan_start;
+    uint8_t first_slot;
+    uint32_t offset;
+
+    scan_start = (hcan == &hcan1) ?
+        &can1_tx_scan_start : &can2_tx_scan_start;
+    first_slot = *scan_start;
+
+    if (diagnostics->recovery_pending != 0U) {
+        if ((HAL_CAN_Stop(hcan) == HAL_OK) &&
+            (HAL_CAN_ResetError(hcan) == HAL_OK) &&
+            (HAL_CAN_Start(hcan) == HAL_OK) &&
+            (HAL_CAN_ActivateNotification(
+                hcan,
+                CAN_IT_RX_FIFO0_MSG_PENDING |
+                CAN_ERROR_NOTIFICATIONS) == HAL_OK)) {
+            diagnostics->recovery_pending = 0U;
+            diagnostics->consecutive_tx_errors = 0U;
+            diagnostics->last_error = HAL_CAN_ERROR_NONE;
+            diagnostics->restart_count++;
+        } else {
+            return;
+        }
     }
 
-    if ((HAL_CAN_Stop(hcan) == HAL_OK) &&
-        (HAL_CAN_ResetError(hcan) == HAL_OK) &&
-        (HAL_CAN_Start(hcan) == HAL_OK) &&
-        (HAL_CAN_ActivateNotification(
-            hcan,
-            CAN_IT_RX_FIFO0_MSG_PENDING |
-            CAN_ERROR_NOTIFICATIONS) == HAL_OK)) {
-        diagnostics->recovery_pending = 0U;
-        diagnostics->consecutive_tx_errors = 0U;
-        diagnostics->last_error = HAL_CAN_ERROR_NONE;
-        diagnostics->restart_count++;
+    for (offset = 0U; offset < CAN_CONTROL_TX_SLOT_COUNT; offset++) {
+        uint32_t index = ((uint32_t)first_slot + offset) %
+                         CAN_CONTROL_TX_SLOT_COUNT;
+        CAN_ControlTxSlot_t *slot = &can_control_tx_slots[index];
+        CAN_TxHeaderTypeDef tx_header = {0};
+        HAL_StatusTypeDef status;
+        uint32_t sequence;
+        uint32_t tx_mailbox;
+        uint8_t tx_data[8];
+
+        if ((slot->hcan != hcan) || (slot->pending == 0U)) {
+            continue;
+        }
+
+        if (HAL_CAN_GetTxMailboxesFreeLevel(hcan) == 0U) {
+            diagnostics->last_tx_status = HAL_BUSY;
+            diagnostics->tx_congestion_count++;
+            return;
+        }
+
+        taskENTER_CRITICAL();
+        sequence = slot->sequence;
+        memcpy(tx_data, slot->data, sizeof(tx_data));
+        taskEXIT_CRITICAL();
+
+        tx_header.StdId = slot->std_id;
+        tx_header.IDE = CAN_ID_STD;
+        tx_header.RTR = CAN_RTR_DATA;
+        tx_header.DLC = 8U;
+        tx_header.TransmitGlobalTime = DISABLE;
+
+        status = HAL_CAN_AddTxMessage(
+            hcan, &tx_header, tx_data, &tx_mailbox);
+        diagnostics->last_tx_status = status;
+
+        if (status == HAL_OK) {
+            taskENTER_CRITICAL();
+            if (slot->sequence == sequence) {
+                slot->pending = 0U;
+            }
+            taskEXIT_CRITICAL();
+            *scan_start = (uint8_t)((index + 1U) %
+                                    CAN_CONTROL_TX_SLOT_COUNT);
+            diagnostics->consecutive_tx_errors = 0U;
+            continue;
+        }
+
+        if (status == HAL_BUSY) {
+            diagnostics->tx_congestion_count++;
+            return;
+        }
+
+        /* HAL_ERROR/HAL_TIMEOUT属于明确的HAL发送错误，才请求重启。 */
+        diagnostics->tx_error_count++;
+        diagnostics->last_error = HAL_CAN_GetError(hcan);
+        if (diagnostics->consecutive_tx_errors < UINT8_MAX) {
+            diagnostics->consecutive_tx_errors++;
+        }
+        diagnostics->recovery_pending = 1U;
+        return;
     }
 }
 
 void CAN_Service(void)
 {
+    taskENTER_CRITICAL();
+    if (can_service_active != 0U) {
+        taskEXIT_CRITICAL();
+        return;
+    }
+    can_service_active = 1U;
+    taskEXIT_CRITICAL();
+
     CAN_ServiceController(&hcan1, &can1_diagnostics);
     CAN_ServiceController(&hcan2, &can2_diagnostics);
+
+    taskENTER_CRITICAL();
+    can_service_active = 0U;
+    taskEXIT_CRITICAL();
 }
 
 uint8_t CAN_IsHealthy(void)
