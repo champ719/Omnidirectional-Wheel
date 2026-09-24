@@ -61,8 +61,6 @@ void Error_Init(void);
 void Error_MonitorUpdate(void);
 Error_Result_t Error_GetResult(void);
 void Error_TriggerEmergencyStop(void);
-Error_Result_t Error_Update(uint8_t remote_online,
-                            uint8_t remote_switch,
-                            uint8_t imu_ready);
+Error_Result_t Error_Update(uint8_t remote_online, uint8_t remote_switch, uint8_t imu_ready);
 
 #endif

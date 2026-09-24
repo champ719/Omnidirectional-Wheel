@@ -22,14 +22,13 @@ typedef struct
 extern CAN_Diagnostics_t can1_diagnostics;
 extern CAN_Diagnostics_t can2_diagnostics;
 
+/* 初始化 CAN 控制器及发送缓存。 */
 void CAN_Init(void);
+/* 维护 CAN 恢复和待发送控制帧。 */
 void CAN_Service(void);
+/* 判断两个 CAN 控制器是否健康。 */
 uint8_t CAN_IsHealthy(void);
-HAL_StatusTypeDef CAN_SendMessage(CAN_HandleTypeDef *hcan,
-                                  volatile Motor_t *motor,
-                                  uint16_t iq1,
-                                  uint16_t iq2,
-                                  uint16_t iq3,
-                                  uint16_t iq4);
+/* 缓存一组待发送的电机控制电流。 */
+HAL_StatusTypeDef CAN_SendMessage(CAN_HandleTypeDef *hcan, volatile Motor_t *motor, uint16_t iq1, uint16_t iq2, uint16_t iq3, uint16_t iq4);
 
 #endif

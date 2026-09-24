@@ -29,6 +29,7 @@ static uint8_t can_service_active;
 static uint8_t can1_tx_scan_start;
 static uint8_t can2_tx_scan_start;
 
+/* 返回指定 CAN 控制器的诊断状态。 */
 static CAN_Diagnostics_t *CAN_GetDiagnostics(CAN_HandleTypeDef *hcan)
 {
     if (hcan == &hcan1) {
@@ -40,20 +41,20 @@ static CAN_Diagnostics_t *CAN_GetDiagnostics(CAN_HandleTypeDef *hcan)
     return NULL;
 }
 
-static CAN_ControlTxSlot_t *CAN_GetControlTxSlot(CAN_HandleTypeDef *hcan,
-                                                  uint32_t std_id)
+/* 查找指定 CAN 控制器和标准帧 ID 对应的发送槽。 */
+static CAN_ControlTxSlot_t *CAN_GetControlTxSlot(CAN_HandleTypeDef *hcan, uint32_t std_id)
 {
     uint32_t index;
 
     for (index = 0U; index < CAN_CONTROL_TX_SLOT_COUNT; index++) {
-        if ((can_control_tx_slots[index].hcan == hcan) &&
-            (can_control_tx_slots[index].std_id == std_id)) {
+        if ((can_control_tx_slots[index].hcan == hcan) && (can_control_tx_slots[index].std_id == std_id)) {
             return &can_control_tx_slots[index];
         }
     }
     return NULL;
 }
 
+/* 解析 DJI 电机反馈并更新连续机械角。 */
 static void FeedbackTrans(volatile Motor_t *motor, const uint8_t *rx_data)
 {
     float change;
@@ -61,28 +62,18 @@ static void FeedbackTrans(volatile Motor_t *motor, const uint8_t *rx_data)
     float full_range;
 
     motor->last_angle = motor->fb_angle;
-    motor->fb_current =
-        (float)((int16_t)(((uint16_t)rx_data[4] << 8U) | rx_data[5])) /
-        16384.0f * 20.0f;
+    motor->fb_current = (float)((int16_t)(((uint16_t)rx_data[4] << 8U) | rx_data[5])) / 16384.0f * 20.0f;
     motor->fb_temp = rx_data[6];
     motor->feedback_tick = HAL_GetTick();
     motor->feedback_received = 1U;
 
     if (motor->motor_type == DJI_3508) {
-        motor->fb_angle =
-            (float)(((uint16_t)rx_data[0] << 8U) | rx_data[1]) /
-            GEAR_RATE_3508 / 8192.0f * 2.0f * 3.1415f;
-        motor->fb_speed =
-            (float)((int16_t)(((uint16_t)rx_data[2] << 8U) | rx_data[3])) /
-            GEAR_RATE_3508 * 2.0f * 3.1415f / 60.0f;
+        motor->fb_angle = (float)(((uint16_t)rx_data[0] << 8U) | rx_data[1]) / GEAR_RATE_3508 / 8192.0f * 2.0f * 3.1415f;
+        motor->fb_speed = (float)((int16_t)(((uint16_t)rx_data[2] << 8U) | rx_data[3])) / GEAR_RATE_3508 * 2.0f * 3.1415f / 60.0f;
         motor->fb_torque = motor->fb_current * K_TORQUE_3508;
     } else if (motor->motor_type == DJI_6020) {
-        motor->fb_angle =
-            (float)(((uint16_t)rx_data[0] << 8U) | rx_data[1]) /
-            8192.0f * 2.0f * 3.1415f;
-        motor->fb_speed =
-            (float)((int16_t)(((uint16_t)rx_data[2] << 8U) | rx_data[3])) *
-            2.0f * 3.1415f / 60.0f;
+        motor->fb_angle = (float)(((uint16_t)rx_data[0] << 8U) | rx_data[1]) / 8192.0f * 2.0f * 3.1415f;
+        motor->fb_speed = (float)((int16_t)(((uint16_t)rx_data[2] << 8U) | rx_data[3])) * 2.0f * 3.1415f / 60.0f;
         motor->fb_torque = motor->fb_current * K_TORQUE_6020;
     }
 
@@ -92,8 +83,7 @@ static void FeedbackTrans(volatile Motor_t *motor, const uint8_t *rx_data)
     }
 
     change = motor->fb_angle - motor->last_angle;
-    half_range = (motor->motor_type == DJI_3508) ?
-        (3.1415f / 19.0f) : 3.1415f;
+    half_range = (motor->motor_type == DJI_3508) ? (3.1415f / 19.0f) : 3.1415f;
     full_range = half_range * 2.0f;
     if (change > half_range) {
         change -= full_range;
@@ -110,9 +100,8 @@ static void FeedbackTrans(volatile Motor_t *motor, const uint8_t *rx_data)
     }
 }
 
-static void CAN_RouteMessage(CAN_HandleTypeDef *hcan,
-                             uint32_t std_id,
-                             const uint8_t *rx_data)
+/* 按 CAN 控制器和标准帧 ID 分发反馈数据。 */
+static void CAN_RouteMessage(CAN_HandleTypeDef *hcan, uint32_t std_id, const uint8_t *rx_data)
 {
     if (hcan == &hcan1) {
         switch (std_id) {
@@ -132,15 +121,9 @@ static void CAN_RouteMessage(CAN_HandleTypeDef *hcan,
             FeedbackTrans(&gimbal.yaw_motor, rx_data);
             break;
         case 0x213:
-            chassis.power_fb.voltage =
-                (float)((int16_t)(((uint16_t)rx_data[1] << 8U) |
-                                  rx_data[0])) / 100.0f;
-            chassis.power_fb.current =
-                (float)((int16_t)(((uint16_t)rx_data[3] << 8U) |
-                                  rx_data[2])) / 100.0f;
-            chassis.power_fb.power =
-                0.8f * chassis.power_fb.voltage * chassis.power_fb.current +
-                0.2f * chassis.power_fb.power;
+            chassis.power_fb.voltage = (float)((int16_t)(((uint16_t)rx_data[1] << 8U) | rx_data[0])) / 100.0f;
+            chassis.power_fb.current = (float)((int16_t)(((uint16_t)rx_data[3] << 8U) | rx_data[2])) / 100.0f;
+            chassis.power_fb.power = 0.8f * chassis.power_fb.voltage * chassis.power_fb.current + 0.2f * chassis.power_fb.power;
             chassis.power_fb.update_tick = HAL_GetTick();
             chassis.power_fb.received = 1U;
             /* 序号最后更新，任务看到新序号时本帧数据已完整。 */
@@ -154,6 +137,7 @@ static void CAN_RouteMessage(CAN_HandleTypeDef *hcan,
     }
 }
 
+/* 初始化 CAN 过滤器、通知、发送槽和诊断状态。 */
 void CAN_Init(void)
 {
     CAN_FilterTypeDef filter = {0};
@@ -179,35 +163,23 @@ void CAN_Init(void)
     filter.FilterActivation = ENABLE;
     filter.SlaveStartFilterBank = 14;
 
-    if ((HAL_CAN_ConfigFilter(&hcan1, &filter) != HAL_OK) ||
-        (HAL_CAN_Start(&hcan1) != HAL_OK) ||
-        (HAL_CAN_ActivateNotification(
-            &hcan1,
-            CAN_IT_RX_FIFO0_MSG_PENDING |
-            CAN_ERROR_NOTIFICATIONS) != HAL_OK)) {
+    if ((HAL_CAN_ConfigFilter(&hcan1, &filter) != HAL_OK) || (HAL_CAN_Start(&hcan1) != HAL_OK) || (HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_ERROR_NOTIFICATIONS) != HAL_OK)) {
         Error_Handler();
     }
 
     filter.FilterBank = 14;
-    if ((HAL_CAN_ConfigFilter(&hcan2, &filter) != HAL_OK) ||
-        (HAL_CAN_Start(&hcan2) != HAL_OK) ||
-        (HAL_CAN_ActivateNotification(
-            &hcan2,
-            CAN_IT_RX_FIFO0_MSG_PENDING |
-            CAN_ERROR_NOTIFICATIONS) != HAL_OK)) {
+    if ((HAL_CAN_ConfigFilter(&hcan2, &filter) != HAL_OK) || (HAL_CAN_Start(&hcan2) != HAL_OK) || (HAL_CAN_ActivateNotification(&hcan2, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_ERROR_NOTIFICATIONS) != HAL_OK)) {
         Error_Handler();
     }
 }
 
+/* 接收一帧 CAN 数据并交给消息路由处理。 */
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
     CAN_RxHeaderTypeDef rx_header;
     uint8_t rx_data[8];
 
-    if (HAL_CAN_GetRxMessage(hcan,
-                             CAN_RX_FIFO0,
-                             &rx_header,
-                             rx_data) != HAL_OK) {
+    if (HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rx_header, rx_data) != HAL_OK) {
         CAN_Diagnostics_t *diagnostics = CAN_GetDiagnostics(hcan);
 
         if (diagnostics != NULL) {
@@ -219,18 +191,13 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
         return;
     }
 
-    if ((rx_header.IDE == CAN_ID_STD) &&
-        (rx_header.RTR == CAN_RTR_DATA)) {
+    if ((rx_header.IDE == CAN_ID_STD) && (rx_header.RTR == CAN_RTR_DATA)) {
         CAN_RouteMessage(hcan, rx_header.StdId, rx_data);
     }
 }
 
-HAL_StatusTypeDef CAN_SendMessage(CAN_HandleTypeDef *hcan,
-                                  volatile Motor_t *motor,
-                                  uint16_t iq1,
-                                  uint16_t iq2,
-                                  uint16_t iq3,
-                                  uint16_t iq4)
+/* 将一组电机电流写入对应 CAN 控制帧的最新值槽。 */
+HAL_StatusTypeDef CAN_SendMessage(CAN_HandleTypeDef *hcan, volatile Motor_t *motor, uint16_t iq1, uint16_t iq2, uint16_t iq3, uint16_t iq4)
 {
     CAN_Diagnostics_t *diagnostics = CAN_GetDiagnostics(hcan);
     CAN_ControlTxSlot_t *slot;
@@ -266,6 +233,7 @@ HAL_StatusTypeDef CAN_SendMessage(CAN_HandleTypeDef *hcan,
     return HAL_OK;
 }
 
+/* 记录 CAN 错误并在总线关闭时请求恢复。 */
 void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
 {
     CAN_Diagnostics_t *diagnostics = CAN_GetDiagnostics(hcan);
@@ -284,25 +252,18 @@ void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan)
     }
 }
 
-static void CAN_ServiceController(CAN_HandleTypeDef *hcan,
-                                  CAN_Diagnostics_t *diagnostics)
+/* 在任务上下文中恢复控制器并发送各槽的最新控制帧。 */
+static void CAN_ServiceController(CAN_HandleTypeDef *hcan, CAN_Diagnostics_t *diagnostics)
 {
     uint8_t *scan_start;
     uint8_t first_slot;
     uint32_t offset;
 
-    scan_start = (hcan == &hcan1) ?
-        &can1_tx_scan_start : &can2_tx_scan_start;
+    scan_start = (hcan == &hcan1) ? &can1_tx_scan_start : &can2_tx_scan_start;
     first_slot = *scan_start;
 
     if (diagnostics->recovery_pending != 0U) {
-        if ((HAL_CAN_Stop(hcan) == HAL_OK) &&
-            (HAL_CAN_ResetError(hcan) == HAL_OK) &&
-            (HAL_CAN_Start(hcan) == HAL_OK) &&
-            (HAL_CAN_ActivateNotification(
-                hcan,
-                CAN_IT_RX_FIFO0_MSG_PENDING |
-                CAN_ERROR_NOTIFICATIONS) == HAL_OK)) {
+        if ((HAL_CAN_Stop(hcan) == HAL_OK) && (HAL_CAN_ResetError(hcan) == HAL_OK) && (HAL_CAN_Start(hcan) == HAL_OK) && (HAL_CAN_ActivateNotification(hcan, CAN_IT_RX_FIFO0_MSG_PENDING | CAN_ERROR_NOTIFICATIONS) == HAL_OK)) {
             diagnostics->recovery_pending = 0U;
             diagnostics->consecutive_tx_errors = 0U;
             diagnostics->last_error = HAL_CAN_ERROR_NONE;
@@ -313,8 +274,7 @@ static void CAN_ServiceController(CAN_HandleTypeDef *hcan,
     }
 
     for (offset = 0U; offset < CAN_CONTROL_TX_SLOT_COUNT; offset++) {
-        uint32_t index = ((uint32_t)first_slot + offset) %
-                         CAN_CONTROL_TX_SLOT_COUNT;
+        uint32_t index = ((uint32_t)first_slot + offset) % CAN_CONTROL_TX_SLOT_COUNT;
         CAN_ControlTxSlot_t *slot = &can_control_tx_slots[index];
         CAN_TxHeaderTypeDef tx_header = {0};
         HAL_StatusTypeDef status;
@@ -343,8 +303,7 @@ static void CAN_ServiceController(CAN_HandleTypeDef *hcan,
         tx_header.DLC = 8U;
         tx_header.TransmitGlobalTime = DISABLE;
 
-        status = HAL_CAN_AddTxMessage(
-            hcan, &tx_header, tx_data, &tx_mailbox);
+        status = HAL_CAN_AddTxMessage(hcan, &tx_header, tx_data, &tx_mailbox);
         diagnostics->last_tx_status = status;
 
         if (status == HAL_OK) {
@@ -353,8 +312,7 @@ static void CAN_ServiceController(CAN_HandleTypeDef *hcan,
                 slot->pending = 0U;
             }
             taskEXIT_CRITICAL();
-            *scan_start = (uint8_t)((index + 1U) %
-                                    CAN_CONTROL_TX_SLOT_COUNT);
+            *scan_start = (uint8_t)((index + 1U) % CAN_CONTROL_TX_SLOT_COUNT);
             diagnostics->consecutive_tx_errors = 0U;
             continue;
         }
@@ -375,6 +333,7 @@ static void CAN_ServiceController(CAN_HandleTypeDef *hcan,
     }
 }
 
+/* 串行维护两个 CAN 控制器的恢复和发送工作。 */
 void CAN_Service(void)
 {
     taskENTER_CRITICAL();
@@ -393,10 +352,8 @@ void CAN_Service(void)
     taskEXIT_CRITICAL();
 }
 
+/* 判断两个 CAN 控制器是否均处于可用状态。 */
 uint8_t CAN_IsHealthy(void)
 {
-    return ((can1_diagnostics.recovery_pending == 0U) &&
-            (can2_diagnostics.recovery_pending == 0U) &&
-            (HAL_CAN_GetState(&hcan1) == HAL_CAN_STATE_LISTENING) &&
-            (HAL_CAN_GetState(&hcan2) == HAL_CAN_STATE_LISTENING)) ? 1U : 0U;
+    return ((can1_diagnostics.recovery_pending == 0U) && (can2_diagnostics.recovery_pending == 0U) && (HAL_CAN_GetState(&hcan1) == HAL_CAN_STATE_LISTENING) && (HAL_CAN_GetState(&hcan2) == HAL_CAN_STATE_LISTENING)) ? 1U : 0U;
 }

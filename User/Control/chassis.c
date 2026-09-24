@@ -11,25 +11,29 @@
 #define CHASSIS_TASK_PERIOD_S 0.002f
 #define PI            3.14159265f
 
+/* 底盘跟随云台的相对角死区，单位 rad；当前 1.0°，用于抑制静止时的陀螺仪零漂。 */
+static const float chassis_follow_deadzone_rad = 0.0174532925f;
+
 /* 小陀螺进入与换向保留斜坡；退出按模式要求直接切回跟随。 */
 #define CHASSIS_FOLLOW_VW_SLOPE_RAD_S2       10.0f
 #define CHASSIS_SPIN_ENTER_SLOPE_RAD_S2        5.0f
 #define CHASSIS_SPIN_REVERSE_SLOPE_RAD_S2      3.0f
 
- Chassis_t chassis = {0};
+Chassis_t chassis = {0};
 
 /* 上一拍的按键位图，用来抓 Q/E 的下降沿。持续按住只切一次模式。 */
 static uint16_t chassis_last_keys;
 static volatile uint8_t chassis_initialized;
 static uint8_t chassis_spin_exit_immediate;
 
+/* 初始化底盘参数、电机控制器、运动斜坡和功率控制。 */
 void Chassis_Init(void)
 {
     RC_Ctrl_t remote;
 
     chassis_initialized = 0U;
 
-    //底盘尺寸信息
+    /* 底盘尺寸信息。 */
     chassis.info.wheelRadius = 0.075f;
     chassis.info.R           = 0.2687f;
     chassis.info.rpm_ratio   = 13.333333f;
@@ -41,7 +45,7 @@ void Chassis_Init(void)
 
     chassis.move.maxVx       = 3.0f;
     chassis.move.maxVy       = 3.0f;
-    chassis.move.maxVw       = 7.894745f;
+    chassis.move.maxVw       = chassis.move.maxVx * COS45 / chassis.info.R;
 
     Remote_GetSnapshot(&remote);
     chassis_last_keys        = remote.key.v;
@@ -49,31 +53,19 @@ void Chassis_Init(void)
     chassis.move.maxPower    = CHASSIS_POWER_LIMIT_W;
     chassis.rotate.ratio     = 1.0f;
 
-    Motor_Init(&chassis.motor_3508[LF], 0x200, DJI_3508,
-    0.4f, 0.2f, 0.7f, 0.2f, 20.0f, 6.0f,
-    0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
-    Motor_Init(&chassis.motor_3508[RF], 0x200, DJI_3508,
-    0.8f, 0.1f, 0.6f, 0.0f, 20.0f, 6.0f,
-    0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
-    Motor_Init(&chassis.motor_3508[LB], 0x200, DJI_3508,
-    0.8f, 0.1f, 0.6f, 0.0f, 20.0f, 6.0f,
-    0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
-    Motor_Init(&chassis.motor_3508[RB], 0x200, DJI_3508,
-    0.8f, 0.1f, 0.6f, 0.0f, 20.0f, 6.0f,
-    0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
+    Motor_Init(&chassis.motor_3508[LF], 0x200, DJI_3508, 0.4f, 0.2f, 0.7f, 0.2f, 20.0f, 6.0f, 0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
+    Motor_Init(&chassis.motor_3508[RF], 0x200, DJI_3508, 0.8f, 0.1f, 0.6f, 0.0f, 20.0f, 6.0f, 0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
+    Motor_Init(&chassis.motor_3508[LB], 0x200, DJI_3508, 0.8f, 0.1f, 0.6f, 0.0f, 20.0f, 6.0f, 0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
+    Motor_Init(&chassis.motor_3508[RB], 0x200, DJI_3508, 0.8f, 0.1f, 0.6f, 0.0f, 20.0f, 6.0f, 0.1f, 0.0f, 0.0f, 0.0f, 25.0f, 8.0f);
 
     PID_Init(&chassis.rotate.pid,     4.0f, 0.0f, 2.0f, 3.0f, 5.0f);
     PID_Init(&chassis.move.real_xPID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
     PID_Init(&chassis.move.real_yPID, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
     PID_Init(&chassis.move.real_wPID, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
-    Slope_Init(&chassis.move.xSlope,
-               2.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
-    Slope_Init(&chassis.move.ySlope,
-               2.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
-    Slope_Init(&chassis.move.spinSlope,
-               CHASSIS_FOLLOW_VW_SLOPE_RAD_S2 * CHASSIS_TASK_PERIOD_S,
-               0.0f);
+    Slope_Init(&chassis.move.xSlope, 2.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
+    Slope_Init(&chassis.move.ySlope, 2.0f * CHASSIS_TASK_PERIOD_S, 0.0f);
+    Slope_Init(&chassis.move.spinSlope, CHASSIS_FOLLOW_VW_SLOPE_RAD_S2 * CHASSIS_TASK_PERIOD_S, 0.0f);
 
     PowerControl_Init();
     Chassis_ResetControl();
@@ -81,11 +73,19 @@ void Chassis_Init(void)
     Motor_NotifyControlInitialized();
 }
 
+/* 返回底盘控制模块是否已完成初始化。 */
 uint8_t Chassis_IsInitialized(void)
 {
     return chassis_initialized;
 }
 
+/* 判断底盘是否处于跟随模式的中心死区。 */
+uint8_t Chassis_IsFollowCentered(void)
+{
+    return ((chassis.rotate.mode == ChassisMode_Follow) && (fabsf(chassis.rotate.relativeAngle) <= chassis_follow_deadzone_rad)) ? 1U : 0U;
+}
+
+/* 清空底盘运动目标、斜坡及控制器历史量。 */
 void Chassis_ResetControl(void)
 {
     RC_Ctrl_t remote;
@@ -96,8 +96,7 @@ void Chassis_ResetControl(void)
     Slope_Reset(&chassis.move.xSlope, 0.0f);
     Slope_Reset(&chassis.move.ySlope, 0.0f);
     Slope_Reset(&chassis.move.spinSlope, 0.0f);
-    Slope_SetStep(&chassis.move.spinSlope,
-                  CHASSIS_FOLLOW_VW_SLOPE_RAD_S2 * CHASSIS_TASK_PERIOD_S);
+    Slope_SetStep(&chassis.move.spinSlope, CHASSIS_FOLLOW_VW_SLOPE_RAD_S2 * CHASSIS_TASK_PERIOD_S);
     chassis_spin_exit_immediate = 0U;
 
     chassis.move.vx = 0.0f;
@@ -114,13 +113,14 @@ void Chassis_ResetControl(void)
     PID_Clear(&chassis.move.real_wPID);
 
     for (uint8_t index = 0U; index < 4U; index++) {
-      chassis.motor_3508[index].target_speed = 0.0f;
-      chassis.motor_3508[index].give_current = 0.0f;
-      PID_Clear(&chassis.motor_3508[index].pid_speed);
+        chassis.motor_3508[index].target_speed = 0.0f;
+        chassis.motor_3508[index].give_current = 0.0f;
+        PID_Clear(&chassis.motor_3508[index].pid_speed);
     }
     PowerControl_Reset();
 }
 
+/* 更新云台相对底盘的偏航角。 */
 static void Chassis_UpdateAngle(void)
 {
     if (Motor_IsOnline(&gimbal.yaw_motor) != 0U) {
@@ -130,6 +130,7 @@ static void Chassis_UpdateAngle(void)
     }
 }
 
+/* 读取遥控器或键鼠的归一化平移指令。 */
 static void Chassis_ReadCommand(float *forward, float *right)
 {
     RC_Ctrl_t remote;
@@ -233,8 +234,7 @@ static void Chassis_UpdateModeKey(void)
 }
 
 /* 根据模式切换方向设置 spinSlope 的变化率。斜坡值保持连续，不在切换时重置。 */
-static void Chassis_ConfigureSpinTransition(Chassis_Mode_e previous_mode,
-                                            Chassis_Mode_e current_mode)
+static void Chassis_ConfigureSpinTransition(Chassis_Mode_e previous_mode, Chassis_Mode_e current_mode)
 {
     uint8_t previous_is_spin;
     uint8_t current_is_spin;
@@ -244,10 +244,8 @@ static void Chassis_ConfigureSpinTransition(Chassis_Mode_e previous_mode,
         return;
     }
 
-    previous_is_spin = ((previous_mode == ChassisMode_SpinLeft) ||
-                        (previous_mode == ChassisMode_SpinRight)) ? 1U : 0U;
-    current_is_spin = ((current_mode == ChassisMode_SpinLeft) ||
-                       (current_mode == ChassisMode_SpinRight)) ? 1U : 0U;
+    previous_is_spin = ((previous_mode == ChassisMode_SpinLeft) || (previous_mode == ChassisMode_SpinRight)) ? 1U : 0U;
+    current_is_spin = ((current_mode == ChassisMode_SpinLeft) || (current_mode == ChassisMode_SpinRight)) ? 1U : 0U;
 
     if ((previous_is_spin == 0U) && (current_is_spin != 0U)) {
         rate = CHASSIS_SPIN_ENTER_SLOPE_RAD_S2;
@@ -262,37 +260,31 @@ static void Chassis_ConfigureSpinTransition(Chassis_Mode_e previous_mode,
         chassis_spin_exit_immediate = 0U;
     }
 
-    Slope_SetStep(&chassis.move.spinSlope,
-                  rate * CHASSIS_TASK_PERIOD_S);
+    Slope_SetStep(&chassis.move.spinSlope, rate * CHASSIS_TASK_PERIOD_S);
 }
 
-/*旋转状态机*/
-static void Chassis_HandleFollow(void) //底盘跟随模式
+/* 根据云台相对角计算底盘跟随旋转速度。 */
+static void Chassis_HandleFollow(void)
 {
     float angle = chassis.rotate.relativeAngle;
-    if(angle >= PI)
-        angle -= 6.28318531f;
-    if(angle < -PI)
-        angle += 6.28318531f;
-    float deadzone = 0.00174532925f;
     float pid_angle = 0.0f;
-    if (angle > deadzone)
-    {
-        pid_angle = angle - deadzone;
+
+    if (angle >= PI) {
+        angle -= 6.28318531f;
     }
-    else if (angle < -deadzone)
-    {
-        pid_angle = angle + deadzone;
+    if (angle < -PI) {
+        angle += 6.28318531f;
     }
-    else
-    {
+    if (angle > chassis_follow_deadzone_rad) {
+        pid_angle = angle - chassis_follow_deadzone_rad;
+    } else if (angle < -chassis_follow_deadzone_rad) {
+        pid_angle = angle + chassis_follow_deadzone_rad;
+    } else {
         pid_angle = 0.0f;
-        chassis.rotate.pid.integral = 0.0f;
+        PID_Clear(&chassis.rotate.pid);
     }
-    PID_SingleCalc(&chassis.rotate.pid, 0, pid_angle);
-    LIMIT(chassis.rotate.pid.output,
-          -chassis.move.maxVw,
-          chassis.move.maxVw);
+    PID_SingleCalc(&chassis.rotate.pid, 0.0f, pid_angle);
+    LIMIT(chassis.rotate.pid.output, -chassis.move.maxVw, chassis.move.maxVw);
     Slope_SetTarget(&chassis.move.spinSlope, chassis.rotate.pid.output);
     if (chassis_spin_exit_immediate != 0U) {
         Slope_Reset(&chassis.move.spinSlope, chassis.rotate.pid.output);
@@ -300,29 +292,28 @@ static void Chassis_HandleFollow(void) //底盘跟随模式
     }
 }
 
-static void Chassis_HandleSpin(void) //小陀螺模式
+/* 根据操控方式更新小陀螺转速比例和目标角速度。 */
+static void Chassis_HandleSpin(void)
 {
-    if (Rocker_Ctrl == 0U)
-    {
+    if (Rocker_Ctrl == 0U) {
         RC_Ctrl_t remote;
 
         Remote_GetSnapshot(&remote);
-        if ((remote.key.v & RC_KEY_CTRL) != 0U)
+        if ((remote.key.v & RC_KEY_CTRL) != 0U) {
             chassis.rotate.ratio = 0.50f;
-        else if ((remote.key.v & RC_KEY_SHIFT) != 0U)
+        } else if ((remote.key.v & RC_KEY_SHIFT) != 0U) {
             chassis.rotate.ratio = 1.0f;
-        else
+        } else {
             chassis.rotate.ratio = 0.75f;
-    }
-    else
-    {
-        if(ABS(Slope_GetVal(&chassis.move.xSlope)) / chassis.move.maxVx + ABS(Slope_GetVal(&chassis.move.ySlope)) / chassis.move.maxVy > 0.05f)
+        }
+    } else {
+        if (ABS(Slope_GetVal(&chassis.move.xSlope)) / chassis.move.maxVx + ABS(Slope_GetVal(&chassis.move.ySlope)) / chassis.move.maxVy > 0.05f) {
             chassis.rotate.ratio = 0.6f;
-        else
+        } else {
             chassis.rotate.ratio = 1.0f;
+        }
     }
-    Slope_SetTarget(&chassis.move.spinSlope,
-                    chassis.move.maxVw * chassis.rotate.ratio * Chassis_SpinDirection());
+    Slope_SetTarget(&chassis.move.spinSlope, 10.0f * chassis.rotate.ratio * Chassis_SpinDirection());
 }
 
 /* 把三个命令斜坡各推进一拍。Slope_SetTarget 只写目标，值要靠 NextVal 走。 */
@@ -331,14 +322,13 @@ static void Chassis_UpdateSlope(void)
     (void)Slope_NextVal(&chassis.move.xSlope);
     (void)Slope_NextVal(&chassis.move.ySlope);
     (void)Slope_NextVal(&chassis.move.spinSlope);
-
 }
 
-/*更新移动数据*/
+/* 将云台坐标系的平移指令旋转到底盘坐标系。 */
 void Chassis_UpdateMove(void)
 {
-	float gimbalAngleSin=sinf(chassis.rotate.relativeAngle);
-	float gimbalAngleCos=cosf(chassis.rotate.relativeAngle);
+    float gimbalAngleSin = sinf(chassis.rotate.relativeAngle);
+    float gimbalAngleCos = cosf(chassis.rotate.relativeAngle);
     float maxVx = chassis.move.maxVx;
     float maxVy = chassis.move.maxVy;
     float forward;
@@ -346,9 +336,7 @@ void Chassis_UpdateMove(void)
 
     Chassis_ReadCommand(&forward, &right);
 
-    if((chassis.rotate.mode == ChassisMode_SpinLeft) ||
-       (chassis.rotate.mode == ChassisMode_SpinRight))
-    {
+    if ((chassis.rotate.mode == ChassisMode_SpinLeft) || (chassis.rotate.mode == ChassisMode_SpinRight)) {
         /* 键鼠修饰键只调整小陀螺转速，平移始终使用固定降速比例。 */
         if (Rocker_Ctrl == 0U) {
             maxVx *= 0.40f;
@@ -364,14 +352,22 @@ void Chassis_UpdateMove(void)
 
     Chassis_UpdateSlope();
 
-	chassis.move.vx=-(Slope_GetVal(&chassis.move.xSlope) * gimbalAngleCos + Slope_GetVal(&chassis.move.ySlope) * gimbalAngleSin);
-	chassis.move.vy=(-Slope_GetVal(&chassis.move.xSlope) * gimbalAngleSin + Slope_GetVal(&chassis.move.ySlope) * gimbalAngleCos);
+    chassis.move.vx = -Slope_GetVal(&chassis.move.xSlope) * gimbalAngleCos - Slope_GetVal(&chassis.move.ySlope) * gimbalAngleSin;
+    chassis.move.vy = -Slope_GetVal(&chassis.move.xSlope) * gimbalAngleSin + Slope_GetVal(&chassis.move.ySlope) * gimbalAngleCos;
     chassis.move.vw = Slope_GetVal(&chassis.move.spinSlope);
 }
 
+/* 执行一拍底盘模式、运动学、轮速和功率控制。 */
 void Task_Chassis_Callback(void)
 {
     Chassis_Mode_e previous_mode;
+    float real_wheel_v[4];
+    float wheel_v[4];
+    float ctrl_vx;
+    float ctrl_vy;
+    float ctrl_vw;
+    float cos45 = COS45;
+    uint8_t i;
 
     /* 故障状态下不发运动指令，只清斜坡和目标值 */
     if (Error_GetResult() != ERROR_RESULT_NONE) {
@@ -384,8 +380,8 @@ void Task_Chassis_Callback(void)
     Chassis_UpdateModeKey();
     Chassis_ConfigureSpinTransition(previous_mode, chassis.rotate.mode);
 
-    switch(chassis.rotate.mode) //更新两种旋转模式状态机
-    {
+    /* 更新底盘旋转模式状态机。 */
+    switch (chassis.rotate.mode) {
         case ChassisMode_Follow:
             Chassis_HandleFollow();
             break;
@@ -395,54 +391,40 @@ void Task_Chassis_Callback(void)
             break;
         default:
             break;
-	}
+    }
 
     Chassis_UpdateMove();
-
-
-    /***全向轮解算各轮子转速****/
-    float cos45 = COS45;
-
-    //先反解车当前真实速度
-    float real_wheel_v[4];
-    for (uint8_t i = 0; i < 4; i++)
-    {
+    /* 根据反馈轮速反解底盘实际速度。 */
+    for (i = 0U; i < 4U; i++) {
         real_wheel_v[i] = chassis.motor_3508[i].fb_speed / chassis.info.rpm_ratio;
     }
-    //解算当前实际速度
     chassis.move.real_vx = (real_wheel_v[0] + real_wheel_v[1] - real_wheel_v[2] - real_wheel_v[3]) / (4.0f * cos45);
     chassis.move.real_vy = (real_wheel_v[0] - real_wheel_v[1] + real_wheel_v[2] - real_wheel_v[3]) / (4.0f * cos45);
     chassis.move.real_vw = (real_wheel_v[0] + real_wheel_v[1] + real_wheel_v[2] + real_wheel_v[3]) / (4.0f * chassis.info.R);
 
-    PID_SingleCalc(&chassis.move.real_xPID, chassis.move.vx, chassis.move.real_vx);//PID进行修正
+    /* 使用底盘速度环修正运动学控制量。 */
+    PID_SingleCalc(&chassis.move.real_xPID, chassis.move.vx, chassis.move.real_vx);
     PID_SingleCalc(&chassis.move.real_yPID, chassis.move.vy, chassis.move.real_vy);
     PID_SingleCalc(&chassis.move.real_wPID, chassis.move.vw, chassis.move.real_vw);
 
-    //单级pid修正后的速度
-    float ctrl_vx, ctrl_vy, ctrl_vw;
     ctrl_vx = chassis.move.vx + chassis.move.real_xPID.output;
     ctrl_vy = chassis.move.vy + chassis.move.real_yPID.output;
     ctrl_vw = chassis.move.vw + chassis.move.real_wPID.output;
 
-    //发送给各个电机
-    float wheel_v[4];
-    wheel_v[0] = (ctrl_vx + ctrl_vy) * cos45 + ctrl_vw * chassis.info.R;    //左前
-    wheel_v[1] = (ctrl_vx - ctrl_vy) * cos45 + ctrl_vw * chassis.info.R;    //右前
-    wheel_v[2] = (-ctrl_vx + ctrl_vy) * cos45 + ctrl_vw * chassis.info.R;    //左后
-    wheel_v[3] = (-ctrl_vx - ctrl_vy) * cos45 + ctrl_vw * chassis.info.R;    //右后
+    /* 正解各车轮线速度：左前、右前、左后、右后。 */
+    wheel_v[0] = (ctrl_vx + ctrl_vy) * cos45 + ctrl_vw * chassis.info.R;
+    wheel_v[1] = (ctrl_vx - ctrl_vy) * cos45 + ctrl_vw * chassis.info.R;
+    wheel_v[2] = (-ctrl_vx + ctrl_vy) * cos45 + ctrl_vw * chassis.info.R;
+    wheel_v[3] = (-ctrl_vx - ctrl_vy) * cos45 + ctrl_vw * chassis.info.R;
 
-    //轮子线速度(m/s) → 输出轴角速度(rad/s)，与 fb_speed 同量纲
-    for (uint8_t i = 0; i < 4; i++)
-    {
+    /* 轮子线速度转换为与反馈同量纲的输出轴角速度。 */
+    for (i = 0U; i < 4U; i++) {
         chassis.motor_3508[i].target_speed = wheel_v[i] * chassis.info.rpm_ratio;
     }
 
     /* 目标轮速 → 电流。轮速环必须跑在功率控制之前，否则没有电流可缩放。 */
-    for (uint8_t i = 0; i < 4; i++)
-    {
-        PID_SingleCalc(&chassis.motor_3508[i].pid_speed,
-                       chassis.motor_3508[i].target_speed,
-                       chassis.motor_3508[i].fb_speed);
+    for (i = 0U; i < 4U; i++) {
+        PID_SingleCalc(&chassis.motor_3508[i].pid_speed, chassis.motor_3508[i].target_speed, chassis.motor_3508[i].fb_speed);
         chassis.motor_3508[i].give_current = chassis.motor_3508[i].pid_speed.output;
     }
 
@@ -456,23 +438,22 @@ void Task_Chassis_Callback(void)
  * @note 立即初始化底盘并进入2ms控制环；系统故障状态会保持输出为零。
  *       解算出的目标轮速写进motor_3508[].target_speed，由MotorTask统一发送。
  */
-void OS_ChassisCallback(void const * argument)
+void OS_ChassisCallback(void const *argument)
 {
-	TickType_t last_wake;
-	const TickType_t period = pdMS_TO_TICKS(2U);
+    TickType_t last_wake;
+    const TickType_t period = pdMS_TO_TICKS(2U);
 
-	(void)argument;
+    (void)argument;
 
-	Chassis_Init();
-	last_wake = xTaskGetTickCount();
-    for(;;)
-    {
-		TickType_t now = xTaskGetTickCount();
+    Chassis_Init();
+    last_wake = xTaskGetTickCount();
+    for (;;) {
+        TickType_t now = xTaskGetTickCount();
 
-		if ((now - last_wake) > (period * 2U)) {
-			last_wake = now;
-		}
-		Task_Chassis_Callback();
-		vTaskDelayUntil(&last_wake, period);
+        if ((now - last_wake) > (period * 2U)) {
+            last_wake = now;
+        }
+        Task_Chassis_Callback();
+        vTaskDelayUntil(&last_wake, period);
     }
 }

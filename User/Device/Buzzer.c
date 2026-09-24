@@ -18,6 +18,7 @@ typedef enum
 static volatile Buzzer_State_t buzzer_state = BUZZER_STATE_IDLE;
 static volatile uint16_t buzzer_ticks_remaining = 0U;
 
+/* 启用或关闭蜂鸣器 PWM 输出。 */
 static void Buzzer_SetEnabled(uint8_t enabled)
 {
     uint32_t compare = 0U;
@@ -28,6 +29,7 @@ static void Buzzer_SetEnabled(uint8_t enabled)
     __HAL_TIM_SET_COMPARE(&htim4, TIM_CHANNEL_3, compare);
 }
 
+/* 初始化蜂鸣器 PWM 并保持静音。 */
 void Buzzer_Init(void)
 {
     Buzzer_SetEnabled(0U);
@@ -36,6 +38,7 @@ void Buzzer_Init(void)
     }
 }
 
+/* 启动一次急停双响提示。 */
 void Buzzer_PlayEmergencyDoubleBeep(void)
 {
     buzzer_state = BUZZER_STATE_FIRST_BEEP;
@@ -43,6 +46,7 @@ void Buzzer_PlayEmergencyDoubleBeep(void)
     Buzzer_SetEnabled(1U);
 }
 
+/* 每 2 ms 推进一次蜂鸣器双响状态机。 */
 void Buzzer_Update_2ms(void)
 {
     if (buzzer_state == BUZZER_STATE_IDLE) {
@@ -78,6 +82,7 @@ void Buzzer_Update_2ms(void)
     }
 }
 
+/* 周期运行蜂鸣器状态机。 */
 void OS_BeepCallback(void const *argument)
 {
     TickType_t last_wake;
@@ -85,8 +90,7 @@ void OS_BeepCallback(void const *argument)
     (void)argument;
     last_wake = xTaskGetTickCount();
 
-    for (;;)
-    {
+    for (;;) {
         Buzzer_Update_2ms();
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(2U));
     }

@@ -52,23 +52,31 @@ typedef struct
     uint32_t update_sequence;
 } RC_Ctrl_t;
 
-/* Latest decoded remote-control data; exposed globally for debugging. */
+/* 最新解码遥控数据，开放为全局变量供调试观察。 */
 extern volatile RC_Ctrl_t rc_ctrl;
 
 /* 摇杆/键鼠控制方式：由 Task_RC_Callback 按拨轮 ±600 置位，各控制模块直读。
    1 = 摇杆控制，0 = 键鼠控制。 */
 extern volatile uint8_t Rocker_Ctrl;
 
+/* 初始化遥控接收。 */
 void Remote_Init(void);
+/* 判断遥控器是否在线。 */
 uint8_t Remote_IsOnline(void);
+/* 判断是否已连续接收五帧有效数据。 */
 uint8_t Remote_HasFiveValidFrames(void);
+/* 判断遥控摇杆是否回中。 */
 uint8_t Remote_ControlsAreCentered(const RC_Ctrl_t *remote);
+/* 清空连续有效帧计数。 */
 void Remote_ResetValidFrameCount(void);
+/* 对遥控通道进行死区、限幅和归一化。 */
 float Remote_NormalizeChannel(int16_t value);
+/* 获取一致的遥控数据快照。 */
 void Remote_GetSnapshot(RC_Ctrl_t *snapshot);
 
 /* 遥控输入层任务入口。轮询按键、按拨轮切换控制方式、右拨杆急停，并刷新故障监控。 */
 void Task_RC_Callback(void);
+/* FreeRTOS 遥控输入任务入口。 */
 void OS_RcCallback(void const *argument);
 
 #endif

@@ -8,8 +8,11 @@
 extern UART_HandleTypeDef huart3;
 extern DMA_HandleTypeDef hdma_usart3_rx;
 
+/* 超过该时长未收到有效遥控帧即判定离线，单位 ms。 */
 #define RC_ONLINE_TIMEOUT_MS  100U
+/* DBUS 摇杆有效满量程。 */
 #define RC_CHANNEL_FULL_SCALE 660.0f
+/* 摇杆归一化前使用的中心死区。 */
 #define RC_CHANNEL_DEADBAND   20
 
 /* 拨轮推到此值切换控制方式（满量程 ±660） */
@@ -26,35 +29,29 @@ static uint8_t rc_rx_buf[RC_RX_BUF_LENGTH];
 static volatile uint8_t remote_valid_frame_count;
 
 /* 解析一整帧（18 字节）。拨杆值非法则判为坏帧，返回 0 不写入。 */
-static uint8_t Remote_DecodeFrame(const uint8_t *f)
+static uint8_t Remote_DecodeFrame(const uint8_t *frame)
 {
     RC_Ctrl_t decoded;
-    uint8_t s1 = (uint8_t)((f[5] >> 4) & 0x03U);
-    uint8_t s2 = (uint8_t)((f[5] >> 6) & 0x03U);
+    uint8_t s1 = (uint8_t)((frame[5] >> 4) & 0x03U);
+    uint8_t s2 = (uint8_t)((frame[5] >> 6) & 0x03U);
 
     memset(&decoded, 0, sizeof(decoded));
-    decoded.rc.ch0 = (int16_t)((f[0] | (f[1] << 8)) & 0x07FF) - RC_CH_VALUE_MID;
-    decoded.rc.ch1 = (int16_t)(((f[1] >> 3) | (f[2] << 5)) & 0x07FF) - RC_CH_VALUE_MID;
-    decoded.rc.ch2 = (int16_t)(((f[2] >> 6) | (f[3] << 2) | (f[4] << 10)) & 0x07FF) - RC_CH_VALUE_MID;
-    decoded.rc.ch3 = (int16_t)(((f[4] >> 1) | (f[5] << 7)) & 0x07FF) - RC_CH_VALUE_MID;
-    decoded.rc.ch4 = (int16_t)((f[16] | (f[17] << 8)) & 0x07FF) - RC_CH_VALUE_MID;
+    decoded.rc.ch0 = (int16_t)((frame[0] | (frame[1] << 8)) & 0x07FF) - RC_CH_VALUE_MID;
+    decoded.rc.ch1 = (int16_t)(((frame[1] >> 3) | (frame[2] << 5)) & 0x07FF) - RC_CH_VALUE_MID;
+    decoded.rc.ch2 = (int16_t)(((frame[2] >> 6) | (frame[3] << 2) | (frame[4] << 10)) & 0x07FF) - RC_CH_VALUE_MID;
+    decoded.rc.ch3 = (int16_t)(((frame[4] >> 1) | (frame[5] << 7)) & 0x07FF) - RC_CH_VALUE_MID;
+    decoded.rc.ch4 = (int16_t)((frame[16] | (frame[17] << 8)) & 0x07FF) - RC_CH_VALUE_MID;
     decoded.rc.s1 = s1;
     decoded.rc.s2 = s2;
 
-    decoded.mouse.x = (int16_t)(f[6]  | (f[7]  << 8));
-    decoded.mouse.y = (int16_t)(f[8]  | (f[9]  << 8));
-    decoded.mouse.z = (int16_t)(f[10] | (f[11] << 8));
-    decoded.mouse.press_l = f[12];
-    decoded.mouse.press_r = f[13];
-    decoded.key.v = (uint16_t)(f[14] | (f[15] << 8));
+    decoded.mouse.x = (int16_t)(frame[6] | (frame[7] << 8));
+    decoded.mouse.y = (int16_t)(frame[8] | (frame[9] << 8));
+    decoded.mouse.z = (int16_t)(frame[10] | (frame[11] << 8));
+    decoded.mouse.press_l = frame[12];
+    decoded.mouse.press_r = frame[13];
+    decoded.key.v = (uint16_t)(frame[14] | (frame[15] << 8));
 
-    if ((s1 == 0U) || (s2 == 0U) ||
-        (decoded.rc.ch0 < -700) || (decoded.rc.ch0 > 700) ||
-        (decoded.rc.ch1 < -700) || (decoded.rc.ch1 > 700) ||
-        (decoded.rc.ch2 < -700) || (decoded.rc.ch2 > 700) ||
-        (decoded.rc.ch3 < -700) || (decoded.rc.ch3 > 700) ||
-        (decoded.rc.ch4 < -700) || (decoded.rc.ch4 > 700) ||
-        (decoded.mouse.press_l > 1U) || (decoded.mouse.press_r > 1U)) {
+    if ((s1 == 0U) || (s2 == 0U) || (decoded.rc.ch0 < -700) || (decoded.rc.ch0 > 700) || (decoded.rc.ch1 < -700) || (decoded.rc.ch1 > 700) || (decoded.rc.ch2 < -700) || (decoded.rc.ch2 > 700) || (decoded.rc.ch3 < -700) || (decoded.rc.ch3 > 700) || (decoded.rc.ch4 < -700) || (decoded.rc.ch4 > 700) || (decoded.mouse.press_l > 1U) || (decoded.mouse.press_r > 1U)) {
         remote_valid_frame_count = 0U;
         return 0U;
     }
@@ -69,6 +66,7 @@ static uint8_t Remote_DecodeFrame(const uint8_t *f)
     return 1U;
 }
 
+/* 初始化遥控数据并启动 DBUS 空闲接收。 */
 void Remote_Init(void)
 {
     rc_ctrl = (RC_Ctrl_t){0};
@@ -81,23 +79,23 @@ void Remote_Init(void)
     __HAL_DMA_DISABLE_IT(&hdma_usart3_rx, DMA_IT_HT);
 }
 
+/* 判断是否已连续接收至少五帧有效数据。 */
 uint8_t Remote_HasFiveValidFrames(void)
 {
     return (remote_valid_frame_count >= 5U) ? 1U : 0U;
 }
 
+/* 判断四个摇杆通道是否均处于中心区域。 */
 uint8_t Remote_ControlsAreCentered(const RC_Ctrl_t *remote)
 {
     if (remote == NULL) {
         return 0U;
     }
 
-    return ((remote->rc.ch0 >= -30) && (remote->rc.ch0 <= 30) &&
-            (remote->rc.ch1 >= -30) && (remote->rc.ch1 <= 30) &&
-            (remote->rc.ch2 >= -30) && (remote->rc.ch2 <= 30) &&
-            (remote->rc.ch3 >= -30) && (remote->rc.ch3 <= 30)) ? 1U : 0U;
+    return ((remote->rc.ch0 >= -30) && (remote->rc.ch0 <= 30) && (remote->rc.ch1 >= -30) && (remote->rc.ch1 <= 30) && (remote->rc.ch2 >= -30) && (remote->rc.ch2 <= 30) && (remote->rc.ch3 >= -30) && (remote->rc.ch3 <= 30)) ? 1U : 0U;
 }
 
+/* 清空连续有效遥控帧计数。 */
 void Remote_ResetValidFrameCount(void)
 {
     uint32_t interrupt_state = __get_PRIMASK();
@@ -109,6 +107,7 @@ void Remote_ResetValidFrameCount(void)
     }
 }
 
+/* 根据最近有效帧时间判断遥控器是否在线。 */
 uint8_t Remote_IsOnline(void)
 {
     RC_Ctrl_t snapshot;
@@ -121,10 +120,10 @@ uint8_t Remote_IsOnline(void)
     return ((HAL_GetTick() - snapshot.update_tick) <= RC_ONLINE_TIMEOUT_MS) ? 1U : 0U;
 }
 
+/* 对遥控通道应用死区、限幅并归一化。 */
 float Remote_NormalizeChannel(int16_t value)
 {
-    if ((value > -RC_CHANNEL_DEADBAND) &&
-        (value < RC_CHANNEL_DEADBAND)) {
+    if ((value > -RC_CHANNEL_DEADBAND) && (value < RC_CHANNEL_DEADBAND)) {
         return 0.0f;
     }
 
@@ -137,6 +136,7 @@ float Remote_NormalizeChannel(int16_t value)
     return (float)value / RC_CHANNEL_FULL_SCALE;
 }
 
+/* 在临界区内复制一份一致的遥控数据快照。 */
 void Remote_GetSnapshot(RC_Ctrl_t *snapshot)
 {
     uint32_t interrupt_state;
@@ -181,8 +181,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
         return;
     }
 
-    if ((Size > 0U) && (Size <= RC_RX_BUF_LENGTH) &&
-        ((Size % RC_FRAME_LENGTH) == 0U)) {
+    if ((Size > 0U) && (Size <= RC_RX_BUF_LENGTH) && ((Size % RC_FRAME_LENGTH) == 0U)) {
         uint16_t offset;
 
         for (offset = 0U; offset < Size; offset += RC_FRAME_LENGTH) {

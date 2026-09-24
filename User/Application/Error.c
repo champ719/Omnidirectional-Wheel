@@ -29,6 +29,7 @@ extern osThreadId ErrorTaskHandle;
 #define ERROR_MOTOR_ONLINE_YAW  (1U << 4)
 #define ERROR_MOTOR_ONLINE_PITCH (1U << 5)
 
+/* 同步更新故障结果及调试阶段。 */
 static void Error_SetState(Error_Result_t result, Error_DebugStage_t stage)
 {
     error_result = result;
@@ -37,6 +38,7 @@ static void Error_SetState(Error_Result_t result, Error_DebugStage_t stage)
     error_debug.stage = stage;
 }
 
+/* 汇总底盘和云台电机的在线状态位。 */
 static uint8_t Error_GetMotorOnlineMask(void)
 {
     uint8_t mask = 0U;
@@ -62,6 +64,7 @@ static uint8_t Error_GetMotorOnlineMask(void)
     return mask;
 }
 
+/* 清除控制使能并记录本次解锁所需的初始状态。 */
 static void Error_PrepareArming(void)
 {
     controls_enabled = 0U;
@@ -78,8 +81,7 @@ static void Error_PrepareArming(void)
  */
 void Error_Init(void)
 {
-    Error_SetState(ERROR_RESULT_REMOTE_OFFLINE,
-                   ERROR_STAGE_REMOTE_OFFLINE);
+    Error_SetState(ERROR_RESULT_REMOTE_OFFLINE, ERROR_STAGE_REMOTE_OFFLINE);
     emergency_stop_triggered = 0U;
     Error_PrepareArming();
 }
@@ -122,10 +124,7 @@ void Error_MonitorUpdate(void)
     error_debug.arming_imu_sequence = arming_imu_sequence;
     error_debug.controls_enabled = controls_enabled;
 
-    result = Error_Update(
-        remote_online,
-        remote.rc.s1,
-        imu_ready);
+    result = Error_Update(remote_online, remote.rc.s1, imu_ready);
 
     if (result != ERROR_RESULT_NONE) {
         Error_PrepareArming();
@@ -143,56 +142,48 @@ void Error_MonitorUpdate(void)
 
     if (error_debug.chassis_initialized == 0U) {
         Error_PrepareArming();
-        Error_SetState(ERROR_RESULT_ARMING,
-                       ERROR_STAGE_WAIT_CHASSIS_INIT);
+        Error_SetState(ERROR_RESULT_ARMING, ERROR_STAGE_WAIT_CHASSIS_INIT);
         return;
     }
 
     if (error_debug.gimbal_initialized == 0U) {
         Error_PrepareArming();
-        Error_SetState(ERROR_RESULT_ARMING,
-                       ERROR_STAGE_WAIT_GIMBAL_INIT);
+        Error_SetState(ERROR_RESULT_ARMING, ERROR_STAGE_WAIT_GIMBAL_INIT);
         return;
     }
 
     if (error_debug.can_healthy == 0U) {
         Error_PrepareArming();
-        Error_SetState(ERROR_RESULT_CAN_FAULT,
-                       ERROR_STAGE_CAN_FAULT);
+        Error_SetState(ERROR_RESULT_CAN_FAULT, ERROR_STAGE_CAN_FAULT);
         return;
     }
 
     if (Motor_FeedbackHealthy() == 0U) {
         Error_PrepareArming();
-        Error_SetState(ERROR_RESULT_MOTOR_FEEDBACK_TIMEOUT,
-                       ERROR_STAGE_MOTOR_FEEDBACK_TIMEOUT);
+        Error_SetState(ERROR_RESULT_MOTOR_FEEDBACK_TIMEOUT, ERROR_STAGE_MOTOR_FEEDBACK_TIMEOUT);
         return;
     }
 
     if (controls_enabled == 0U) {
         if (remote.rc.s2 != RC_SW_MID) {
             Error_PrepareArming();
-            Error_SetState(ERROR_RESULT_ARMING,
-                           ERROR_STAGE_WAIT_S2_MID);
+            Error_SetState(ERROR_RESULT_ARMING, ERROR_STAGE_WAIT_S2_MID);
             return;
         }
 
         if (error_debug.controls_centered == 0U) {
             Error_PrepareArming();
-            Error_SetState(ERROR_RESULT_ARMING,
-                           ERROR_STAGE_WAIT_STICK_CENTER);
+            Error_SetState(ERROR_RESULT_ARMING, ERROR_STAGE_WAIT_STICK_CENTER);
             return;
         }
 
         if (Remote_HasFiveValidFrames() == 0U) {
-            Error_SetState(ERROR_RESULT_ARMING,
-                           ERROR_STAGE_WAIT_REMOTE_FRAMES);
+            Error_SetState(ERROR_RESULT_ARMING, ERROR_STAGE_WAIT_REMOTE_FRAMES);
             return;
         }
 
         if (IMU_Attitude_GetUpdateSequence() == arming_imu_sequence) {
-            Error_SetState(ERROR_RESULT_ARMING,
-                           ERROR_STAGE_WAIT_IMU_UPDATE);
+            Error_SetState(ERROR_RESULT_ARMING, ERROR_STAGE_WAIT_IMU_UPDATE);
             return;
         }
 
@@ -214,8 +205,7 @@ void Error_TriggerEmergencyStop(void)
     }
 
     Error_PrepareArming();
-    Error_SetState(ERROR_RESULT_EMERGENCY_STOP,
-                   ERROR_STAGE_EMERGENCY_STOP);
+    Error_SetState(ERROR_RESULT_EMERGENCY_STOP, ERROR_STAGE_EMERGENCY_STOP);
     emergency_stop_triggered = 1U;
     if (ErrorTaskHandle != NULL) {
         (void)osThreadResume(ErrorTaskHandle);
@@ -229,9 +219,7 @@ void Error_TriggerEmergencyStop(void)
  * @param imu_ready IMU 姿态解算就绪标志，1 表示就绪。
  * @return 当前基础故障结果；遥控离线的优先级高于拨杆急停。
  */
-Error_Result_t Error_Update(uint8_t remote_online,
-                            uint8_t remote_switch,
-                            uint8_t imu_ready)
+Error_Result_t Error_Update(uint8_t remote_online, uint8_t remote_switch, uint8_t imu_ready)
 {
     if (remote_online == 0U) {
         return ERROR_RESULT_REMOTE_OFFLINE;
@@ -241,8 +229,7 @@ Error_Result_t Error_Update(uint8_t remote_online,
         return ERROR_RESULT_EMERGENCY_STOP;
     }
 
-    if ((remote_switch != RC_SW_MID) &&
-        (remote_switch != RC_SW_UP)) {
+    if ((remote_switch != RC_SW_MID) && (remote_switch != RC_SW_UP)) {
         return ERROR_RESULT_STOPPED;
     }
 
@@ -266,13 +253,11 @@ void OS_ErrorCallback(void const *argument)
     uint32_t buzzer_update_tick;
 
     (void)argument;
-    for (;;)
-    {
+    for (;;) {
         /* 上电或上一次急停解除后挂起，由 Error_TriggerEmergencyStop 唤醒。 */
         (void)osThreadSuspend(ErrorTaskHandle);
 
-        Error_SetState(ERROR_RESULT_EMERGENCY_STOP,
-                       ERROR_STAGE_EMERGENCY_STOP);
+        Error_SetState(ERROR_RESULT_EMERGENCY_STOP, ERROR_STAGE_EMERGENCY_STOP);
         Error_PrepareArming();
         Chassis_ResetControl();
         gimbal.yaw_motor.give_current = 0.0f;
@@ -281,8 +266,7 @@ void OS_ErrorCallback(void const *argument)
         Buzzer_PlayEmergencyDoubleBeep();
         buzzer_update_tick = HAL_GetTick();
 
-        for (;;)
-        {
+        for (;;) {
             CAN_Service();
             Motor_STOP();
 
@@ -295,8 +279,7 @@ void OS_ErrorCallback(void const *argument)
             error_debug.remote_online = Remote_IsOnline();
             error_debug.remote_s1 = remote.rc.s1;
             error_debug.remote_s2 = remote.rc.s2;
-            if ((remote.rc.s1 == RC_SW_MID) ||
-                (remote.rc.s1 == RC_SW_UP)) {
+            if ((remote.rc.s1 == RC_SW_MID) || (remote.rc.s1 == RC_SW_UP)) {
                 Chassis_ResetControl();
 
                 PID_Clear(&gimbal.yaw_motor.pid_position);
@@ -317,7 +300,6 @@ void OS_ErrorCallback(void const *argument)
                 break;
             }
 
-        
             HAL_Delay(1U);
         }
     }
