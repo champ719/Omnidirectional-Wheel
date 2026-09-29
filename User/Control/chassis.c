@@ -11,7 +11,6 @@
 #define CHASSIS_TASK_PERIOD_S 0.002f
 #define PI            3.14159265f
 
-/* 底盘跟随云台的相对角死区，单位 rad；当前 1.0°，用于抑制静止时的陀螺仪零漂。 */
 static const float chassis_follow_deadzone_rad = 0.0174532925f;
 
 /* 小陀螺进入与换向保留斜坡；退出按模式要求直接切回跟随。 */

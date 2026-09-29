@@ -5,25 +5,6 @@
 
 #include <math.h>
 
-/* 功率目标相对硬上限保留的安全余量，单位 W。 */
-static const float power_target_margin_w = 5.0f;
-/* 功率反馈 PI 比例增益，单位 1/W。 */
-static const float power_feedback_kp = 0.008f;
-/* 功率反馈 PI 积分增益，单位 1/(W*s)。 */
-static const float power_feedback_ki = 0.15f;
-/* 反馈最多可额外降低的电流缩放量。 */
-static const float power_correction_min = -0.80f;
-/* 反馈不允许突破模型给出的前馈缩放上限。 */
-static const float power_correction_max = 0.0f;
-/* 预测或实测达到目标功率该比例后启用反馈环。 */
-static const float power_loop_active_ratio = 0.70f;
-/* 功率反馈积分使用的最小时间间隔，单位 s。 */
-static const float power_feedback_dt_min_s = 0.001f;
-/* 功率反馈积分使用的最大时间间隔，单位 s。 */
-static const float power_feedback_dt_max_s = 0.100f;
-/* 功率计反馈超过该时间未更新即判为无效，单位 ms。 */
-static const uint32_t power_feedback_timeout_ms = 100U;
-
 /* 将数值限制在指定闭区间内。 */
 static float PowerControl_Clamp(float value, float minimum, float maximum)
 {
@@ -87,7 +68,7 @@ static float PowerControl_CalculateFeedforward(float quadratic, float linear, fl
   const uint8_t iteration_count = 20U;
   float requested_power_raw = quadratic + linear + constant;
   float requested_power = PowerControl_PredictTotalAtScale(quadratic, linear, constant, 1.0f);
-  float feedforward_limit = chassis.power_prediction.power_max - power_target_margin_w;
+  float feedforward_limit = chassis.power_prediction.power_max - 5.0f;
   float low = 0.0f;
   float high = 1.0f;
   uint8_t bracket_found = 0U;
@@ -159,7 +140,7 @@ static uint8_t PowerControl_ReadFeedback(float *power, uint32_t *tick, uint32_t 
   } while (sequence_before != sequence_after);
   *sequence = sequence_after;
 
-  if (!isfinite(voltage) || !isfinite(current) || !isfinite(*power) || (voltage < 1.0f) || (voltage > 60.0f) || ((HAL_GetTick() - *tick) > power_feedback_timeout_ms)) {
+  if (!isfinite(voltage) || !isfinite(current) || !isfinite(*power) || (voltage < 1.0f) || (voltage > 60.0f) || ((HAL_GetTick() - *tick) > 100U)) {
     return 0U;
   }
   return 1U;
@@ -251,14 +232,14 @@ void PowerControl_Apply(void)
   model_scale = PowerControl_CalculateFeedforward(quadratic, linear, constant);
   chassis.power_prediction.feedforward_scale = model_scale;
   final_scale = model_scale;
-  target_power = chassis.power_prediction.power_max - power_target_margin_w;
+  target_power = chassis.power_prediction.power_max - 5.0f;
   feedback_valid = PowerControl_ReadFeedback(&measured_power, &feedback_tick, &feedback_sequence);
 
   if (feedback_valid != 0U) {
     chassis.power_prediction.measured_power = measured_power;
 
     /* 低负载不追逐功率上限；接近限功率区或已经超限时才闭环。 */
-    if ((chassis.power_prediction.requested_power >= target_power * power_loop_active_ratio) || (measured_power >= target_power * power_loop_active_ratio)) {
+    if ((chassis.power_prediction.requested_power >= target_power * 0.70f) || (measured_power >= target_power * 0.70f)) {
       float error = target_power - measured_power;
 
       if (chassis.power_prediction.feedback_active == 0U) {
@@ -271,10 +252,10 @@ void PowerControl_Apply(void)
         float candidate_integral;
         float candidate_scale;
 
-        dt = PowerControl_Clamp(dt, power_feedback_dt_min_s, power_feedback_dt_max_s);
-        candidate_integral = chassis.power_prediction.feedback_integral + power_feedback_ki * error * dt;
-        candidate_integral = PowerControl_Clamp(candidate_integral, power_correction_min, power_correction_max);
-        candidate_scale = model_scale + power_feedback_kp * error + candidate_integral;
+        dt = PowerControl_Clamp(dt, 0.001f, 0.100f);
+        candidate_integral = chassis.power_prediction.feedback_integral + 0.15f * error * dt;
+        candidate_integral = PowerControl_Clamp(candidate_integral, -0.80f, 0.0f);
+        candidate_scale = model_scale + 0.008f * error + candidate_integral;
 
         /* 条件积分抗饱和：输出顶住时不继续沿同方向积累。 */
         if (!(((candidate_scale >= 1.0f) && (error > 0.0f)) || ((candidate_scale <= 0.0f) && (error < 0.0f)))) {
@@ -285,7 +266,7 @@ void PowerControl_Apply(void)
       }
 
       chassis.power_prediction.power_error = error;
-      chassis.power_prediction.feedback_correction = PowerControl_Clamp(power_feedback_kp * error + chassis.power_prediction.feedback_integral, power_correction_min, power_correction_max);
+      chassis.power_prediction.feedback_correction = PowerControl_Clamp(0.008f * error + chassis.power_prediction.feedback_integral, -0.80f, 0.0f);
       final_scale = model_scale + chassis.power_prediction.feedback_correction;
       /* 安全不变量：反馈控制绝不能突破模型前馈给出的缩放上限。 */
       if (final_scale > model_scale) {
