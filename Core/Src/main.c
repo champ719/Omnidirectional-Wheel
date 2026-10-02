@@ -101,9 +101,8 @@ int main(void)
   MX_TIM6_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  /* 各模块的任务入口自行完成各自的 Chassis_Init / Gimbal_Init，
-     这里只做与任务无关的外设与状态初始化 */
-  CAN_Init();
+  CAN1_Init();
+  CAN2_Init();
   Remote_Init();
   Buzzer_Init();
   Error_Init();

@@ -37,7 +37,7 @@ void Motor_Init(volatile Motor_t *motor, uint32_t cmd_id, uint8_t motor_type, fl
 }
 
 /* 将目标电流转换为 CAN 报文使用的 16 位控制值。 */
-uint16_t Motor_Trans(volatile Motor_t *motor)
+int16_t Motor_Trans(volatile Motor_t *motor)
 {
   float current;
   float current_limit;
@@ -70,7 +70,7 @@ uint16_t Motor_Trans(volatile Motor_t *motor)
   }
 
   command = (int16_t)(current / current_limit * command_limit);
-  return (uint16_t)command;
+  return command;
 }
 
 /* 判断单个电机反馈是否在线。 */
@@ -99,7 +99,7 @@ uint8_t Motor_FeedbackHealthy(void)
   return (Motor_IsOnline(&gimbal.yaw_motor) != 0U) ? 1U : 0U;
 }
 
-/* 将各电机最新目标电流写入 CAN 发送缓存。 */
+/* 直接发送各电机最新目标电流。 */
 void Motor_UPDATE(void)
 {
   CAN_SendMessage(&hcan1, &chassis.motor_3508[LF], Motor_Trans(&chassis.motor_3508[LF]), Motor_Trans(&chassis.motor_3508[RF]), Motor_Trans(&chassis.motor_3508[LB]), Motor_Trans(&chassis.motor_3508[RB]));
@@ -124,7 +124,7 @@ void Motor_NotifyControlInitialized(void)
     }
 }
 
-/* 每 2 ms 覆盖控制帧缓存并尝试送入 CAN 硬件邮箱。 */
+/* 每 2 ms 发送当前控制帧。 */
 void OS_MotorCallback(void const *argument)
 {
     TickType_t last_wake;
@@ -150,7 +150,6 @@ void OS_MotorCallback(void const *argument)
         } else {
             Motor_UPDATE();
         }
-        CAN_Service();
         vTaskDelayUntil(&last_wake, period);
     }
 }

@@ -118,7 +118,11 @@ void Error_MonitorUpdate(void)
     error_debug.imu_ready = imu_ready;
     error_debug.chassis_initialized = Chassis_IsInitialized();
     error_debug.gimbal_initialized = Gimbal_IsInitialized();
-    error_debug.can_healthy = CAN_IsHealthy();
+    error_debug.can_healthy =
+        (HAL_CAN_GetState(&hcan1) == HAL_CAN_STATE_LISTENING) &&
+        (HAL_CAN_GetState(&hcan2) == HAL_CAN_STATE_LISTENING) &&
+        ((hcan1.Instance->ESR & CAN_ESR_BOFF) == 0U) &&
+        ((hcan2.Instance->ESR & CAN_ESR_BOFF) == 0U);
     error_debug.motor_online_mask = Error_GetMotorOnlineMask();
     error_debug.imu_sequence = IMU_Attitude_GetUpdateSequence();
     error_debug.arming_imu_sequence = arming_imu_sequence;
@@ -244,7 +248,7 @@ Error_Result_t Error_Update(uint8_t remote_online, uint8_t remote_switch, uint8_
  * @brief 急停专用最高优先级任务入口。
  * @param argument FreeRTOS 任务参数，当前未使用。
  * @note 任务上电后先挂起自身；被急停触发唤醒后不再让出 CPU，持续维护
- *       CAN 并发送零电流。S1 回到中档或上档时只清控制器历史量，保留
+ *       CAN 发送零电流。S1 回到中档或上档时只清控制器历史量，保留
  *       IMU 连续角和云台目标角，然后重新挂起以等待下一次急停。
  */
 void OS_ErrorCallback(void const *argument)
@@ -267,7 +271,6 @@ void OS_ErrorCallback(void const *argument)
         buzzer_update_tick = HAL_GetTick();
 
         for (;;) {
-            CAN_Service();
             Motor_STOP();
 
             if ((HAL_GetTick() - buzzer_update_tick) >= 2U) {

@@ -113,7 +113,7 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* definition and creation of IMUTask */
-  osThreadDef(IMUTask, OS_IMUCallback, osPriorityNormal, 0, 1024);
+  osThreadDef(IMUTask, OS_IMUCallback, osPriorityHigh, 0, 1024);
   IMUTaskHandle = osThreadCreate(osThread(IMUTask), NULL);
 
   /* definition and creation of MotorTask */

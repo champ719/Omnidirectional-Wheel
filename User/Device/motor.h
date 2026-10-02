@@ -41,7 +41,7 @@ typedef struct Motor_t
 /* 初始化电机状态和双环 PID。 */
 void Motor_Init(volatile Motor_t *motor, uint32_t cmd_id, uint8_t motor_type, float kp_speed, float ki_speed, float kd_speed, float kf_speed, float out_limit_speed, float integral_limit_speed, float kp_position, float ki_position, float kd_position, float kf_position, float out_limit_position, float integral_limit_position);
 /* 将目标电流转换为 CAN 控制值。 */
-uint16_t Motor_Trans(volatile Motor_t *motor);
+int16_t Motor_Trans(volatile Motor_t *motor);
 /* 判断单个电机是否在线。 */
 uint8_t Motor_IsOnline(const volatile Motor_t *motor);
 /* 检查参与控制的电机反馈。 */
@@ -53,7 +53,7 @@ void Motor_STOP(void);
 /* 通知电机任务控制模块已完成初始化。 */
 void Motor_NotifyControlInitialized(void);
 
-/* FreeRTOS 电机任务入口：2 ms 一轮，将最新 give_current 提交给 CAN 覆盖式缓存。 */
+/* FreeRTOS 电机任务入口：2 ms 一轮，直接发送当前 give_current。 */
 void OS_MotorCallback(void const *argument);
 
 #endif
